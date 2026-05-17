@@ -7,17 +7,20 @@
 #include "Components/Button.h"
 #include "SampleHUDWidget.generated.h"
 
+DECLARE_MULTICAST_DELEGATE(FOnHUDButtonClicked);
+
 UCLASS()
 class UISAMPLE_API USampleHUDWidget : public UUserWidget
 {
     GENERATED_BODY()
 
-protected:
+public:
     virtual void NativeConstruct() override;
 
-public:
-    UFUNCTION(BlueprintCallable)
     void SetHP(int32 InCurrentHP, int32 InMaxHP);
+
+    FOnHUDButtonClicked OnDamageClicked;
+    FOnHUDButtonClicked OnHealClicked;
 
 protected:
     UPROPERTY(meta = (BindWidget))
@@ -38,8 +41,4 @@ private:
 
     UFUNCTION()
     void HandleHealClicked();
-
-private:
-    int32 CurrentHP = 100;
-    int32 MaxHP = 100;
 };

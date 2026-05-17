@@ -1,0 +1,30 @@
+# Visual Studio
+.vs/
+.vscode/
+*.sln
+*.suo
+*.opensdf
+*.sdf
+*.VC.db
+*.VC.opendb
+*.user
+*.rsuser
+
+# Unreal generated folders
+Binaries/
+DerivedDataCache/
+Intermediate/
+Saved/
+
+# Generated / local config
+shadertoolsconfig.json
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# JetBrains / Rider
+.idea/
+
+# Local Visual Studio Unreal integration plugin
+Plugins/VisualStudioTools/

@@ -7,6 +7,7 @@
 #include "SamplePlayerController.generated.h"
 
 class USampleHUDWidget;
+class UMockPlayerModel;
 
 UCLASS()
 class UISAMPLE_API ASamplePlayerController : public APlayerController
@@ -21,6 +22,14 @@ protected:
     TSubclassOf<USampleHUDWidget> HUDWidgetClass;
 
 private:
+    void HandleDamageClicked();
+    void HandleHealClicked();
+    void HandleHPChanged(int32 CurrentHP, int32 MaxHP);
+
+private:
     UPROPERTY(Transient)
     TObjectPtr<USampleHUDWidget> HUDWidgetInstance;
+
+    UPROPERTY(Transient)
+    TObjectPtr<UMockPlayerModel> PlayerModel;
 };

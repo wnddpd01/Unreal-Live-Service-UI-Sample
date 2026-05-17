@@ -14,21 +14,19 @@ void USampleHUDWidget::NativeConstruct()
     {
         HealButton->OnClicked.AddDynamic(this, &USampleHUDWidget::HandleHealClicked);
     }
-
-    SetHP(CurrentHP, MaxHP);
 }
 
 void USampleHUDWidget::SetHP(int32 InCurrentHP, int32 InMaxHP)
 {
-    MaxHP = FMath::Max(InMaxHP, 1);
-    CurrentHP = FMath::Clamp(InCurrentHP, 0, MaxHP);
+    const int32 SafeMaxHP = FMath::Max(InMaxHP, 1);
+    const int32 SafeCurrentHP = FMath::Clamp(InCurrentHP, 0, SafeMaxHP);
 
-    const float HPRatio = static_cast<float>(CurrentHP) / static_cast<float>(MaxHP);
+    const float HPRatio = static_cast<float>(SafeCurrentHP) / static_cast<float>(SafeMaxHP);
 
     if (HPText)
     {
         HPText->SetText(FText::FromString(
-            FString::Printf(TEXT("%d / %d"), CurrentHP, MaxHP)
+            FString::Printf(TEXT("%d / %d"), SafeCurrentHP, SafeMaxHP)
         ));
     }
 
@@ -40,10 +38,10 @@ void USampleHUDWidget::SetHP(int32 InCurrentHP, int32 InMaxHP)
 
 void USampleHUDWidget::HandleDamageClicked()
 {
-    SetHP(CurrentHP - 10, MaxHP);
+    OnDamageClicked.Broadcast();
 }
 
 void USampleHUDWidget::HandleHealClicked()
 {
-    SetHP(CurrentHP + 10, MaxHP);
+    OnHealClicked.Broadcast();
 }
