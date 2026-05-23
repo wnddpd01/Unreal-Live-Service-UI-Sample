@@ -7,6 +7,8 @@
 #include "Components/Button.h"
 #include "SampleHUDWidget.generated.h"
 
+class UHUDViewModel;
+
 DECLARE_MULTICAST_DELEGATE(FOnHUDButtonClicked);
 
 UCLASS()
@@ -17,10 +19,19 @@ class UISAMPLE_API USampleHUDWidget : public UUserWidget
 public:
     virtual void NativeConstruct() override;
 
-    void SetHP(int32 InCurrentHP, int32 InMaxHP);
+    UHUDViewModel& EnsureViewModel();
+    void RefreshFromViewModel();
 
-    FOnHUDButtonClicked OnDamageClicked;
-    FOnHUDButtonClicked OnHealClicked;
+private:
+    UFUNCTION()
+    void HandleDamageClicked();
+
+    UFUNCTION()
+    void HandleHealClicked();
+
+private:
+    UPROPERTY(Transient)
+    TObjectPtr<UHUDViewModel> ViewModel;
 
 protected:
     UPROPERTY(meta = (BindWidget))
@@ -34,11 +45,4 @@ protected:
 
     UPROPERTY(meta = (BindWidget))
     TObjectPtr<UButton> HealButton = nullptr;
-
-private:
-    UFUNCTION()
-    void HandleDamageClicked();
-
-    UFUNCTION()
-    void HandleHealClicked();
 };

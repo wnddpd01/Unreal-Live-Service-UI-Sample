@@ -1,10 +1,11 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #include "SamplePlayerController.h"
 
 #include "MockPlayerModel.h"
 #include "SampleHUDWidget.h"
+#include "UIPresentationSubsystem.h"
 #include "Blueprint/UserWidget.h"
+#include "Engine/Engine.h"
+#include "HUDPresenter.h"
 
 void ASamplePlayerController::BeginPlay()
 {
@@ -17,8 +18,14 @@ void ASamplePlayerController::BeginPlay()
         return;
     }
 
-    PlayerModel->OnHPChanged.AddUObject(this, &ASamplePlayerController::HandleHPChanged);
-    PlayerModel->Initialize(100);
+    if (GEngine)
+    {
+        if (UUIPresentationSubsystem* Presentation =
+            GEngine->GetEngineSubsystem<UUIPresentationSubsystem>())
+        {
+            Presentation->RegisterObject(HUDPresentationIds::PlayerModel, PlayerModel);
+        }
+    }
 
     if (!HUDWidgetClass)
     {
@@ -33,41 +40,13 @@ void ASamplePlayerController::BeginPlay()
         return;
     }
 
-    HUDWidgetInstance->OnDamageClicked.AddUObject(this, &ASamplePlayerController::HandleDamageClicked);
-    HUDWidgetInstance->OnHealClicked.AddUObject(this, &ASamplePlayerController::HandleHealClicked);
-
     HUDWidgetInstance->AddToViewport();
-
-    // 초기 HP 표시
-    HUDWidgetInstance->SetHP(PlayerModel->GetCurrentHP(), PlayerModel->GetMaxHP());
 
     bShowMouseCursor = true;
 
     FInputModeGameAndUI InputMode;
     InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
     SetInputMode(InputMode);
-}
 
-void ASamplePlayerController::HandleDamageClicked()
-{
-    if (PlayerModel)
-    {
-        PlayerModel->ApplyDamage(10);
-    }
-}
-
-void ASamplePlayerController::HandleHealClicked()
-{
-    if (PlayerModel)
-    {
-        PlayerModel->ApplyHeal(10);
-    }
-}
-
-void ASamplePlayerController::HandleHPChanged(int32 CurrentHP, int32 MaxHP)
-{
-    if (HUDWidgetInstance)
-    {
-        HUDWidgetInstance->SetHP(CurrentHP, MaxHP);
-    }
+    PlayerModel->Initialize(100);
 }

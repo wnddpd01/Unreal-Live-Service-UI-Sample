@@ -1,5 +1,12 @@
-// Fill out your copyright notice in the Description page of Project Settings.
 #include "SampleHUDWidget.h"
+
+#include "HUDViewModel.h"
+#include "UIPresentationSubsystem.h"
+#include "Components/Button.h"
+#include "Components/ProgressBar.h"
+#include "Components/TextBlock.h"
+#include "Engine/Engine.h"
+#include "HUDPresenter.h"
 
 void USampleHUDWidget::NativeConstruct()
 {
@@ -14,34 +21,91 @@ void USampleHUDWidget::NativeConstruct()
     {
         HealButton->OnClicked.AddDynamic(this, &USampleHUDWidget::HandleHealClicked);
     }
+
+    UHUDViewModel& HUDViewModel = EnsureViewModel();
+
+    HUDViewModel.OnChanged.RemoveAll(this);
+    HUDViewModel.OnChanged.AddUObject(
+        this,
+        &USampleHUDWidget::RefreshFromViewModel
+    );
+
+    if (GEngine)
+    {
+        if (UUIPresentationSubsystem* Presentation =
+            GEngine->GetEngineSubsystem<UUIPresentationSubsystem>())
+        {
+			Presentation->RegisterObject(HUDPresentationIds::ViewModel, &HUDViewModel);
+            Presentation->Emit(HUDPresentationIds::RefreshViewRequested);
+        }
+    }
+
+    RefreshFromViewModel();
 }
 
-void USampleHUDWidget::SetHP(int32 InCurrentHP, int32 InMaxHP)
+UHUDViewModel& USampleHUDWidget::EnsureViewModel()
 {
-    const int32 SafeMaxHP = FMath::Max(InMaxHP, 1);
-    const int32 SafeCurrentHP = FMath::Clamp(InCurrentHP, 0, SafeMaxHP);
+    if (!ViewModel)
+    {
+        ViewModel = NewObject<UHUDViewModel>(this);
+    }
 
-    const float HPRatio = static_cast<float>(SafeCurrentHP) / static_cast<float>(SafeMaxHP);
+    return *ViewModel;
+}
+
+void USampleHUDWidget::RefreshFromViewModel()
+{
+    if (!ViewModel)
+    {
+        return;
+    }
 
     if (HPText)
     {
-        HPText->SetText(FText::FromString(
-            FString::Printf(TEXT("%d / %d"), SafeCurrentHP, SafeMaxHP)
-        ));
+        HPText->SetText(ViewModel->GetHPText());
     }
 
     if (HPBar)
     {
-        HPBar->SetPercent(HPRatio);
+        HPBar->SetPercent(ViewModel->GetHPRatio());
+    }
+
+    const ESlateVisibility HPVisibility =
+        ViewModel->ShouldShowHP()
+        ? ESlateVisibility::Visible
+        : ESlateVisibility::Collapsed;
+
+    if (HPText)
+    {
+        HPText->SetVisibility(HPVisibility);
+    }
+
+    if (HPBar)
+    {
+        HPBar->SetVisibility(HPVisibility);
     }
 }
 
 void USampleHUDWidget::HandleDamageClicked()
 {
-    OnDamageClicked.Broadcast();
+    if (GEngine)
+    {
+        if (UUIPresentationSubsystem* Presentation =
+            GEngine->GetEngineSubsystem<UUIPresentationSubsystem>())
+        {
+            Presentation->Emit(HUDPresentationIds::DamageRequested);
+        }
+    }
 }
 
 void USampleHUDWidget::HandleHealClicked()
 {
-    OnHealClicked.Broadcast();
+    if (GEngine)
+    {
+        if (UUIPresentationSubsystem* Presentation =
+            GEngine->GetEngineSubsystem<UUIPresentationSubsystem>())
+        {
+            Presentation->Emit(HUDPresentationIds::HealRequested);
+        }
+    }
 }

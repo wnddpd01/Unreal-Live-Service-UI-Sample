@@ -1,14 +1,23 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "MockPlayerModel.h"
+
+#include "Engine/Engine.h"
+#include "UIPresentationSubsystem.h"
+#include "HUDPresenter.h"
 
 void UMockPlayerModel::Initialize(int32 InMaxHP)
 {
     MaxHP = FMath::Max(InMaxHP, 1);
     CurrentHP = MaxHP;
 
-    BroadcastHPChanged();
+    if (GEngine)
+    {
+        if (UUIPresentationSubsystem* Presentation =
+            GEngine->GetEngineSubsystem<UUIPresentationSubsystem>())
+        {
+            Presentation->RegisterObject(HUDPresentationIds::PlayerModel, this);
+            Presentation->Emit(HUDPresentationIds::HPChanged);
+        }
+    }
 }
 
 void UMockPlayerModel::ApplyDamage(int32 DamageAmount)
@@ -31,10 +40,13 @@ void UMockPlayerModel::SetHP(int32 NewHP)
     }
 
     CurrentHP = ClampedHP;
-    BroadcastHPChanged();
-}
 
-void UMockPlayerModel::BroadcastHPChanged()
-{
-    OnHPChanged.Broadcast(CurrentHP, MaxHP);
+    if (GEngine)
+    {
+        if (UUIPresentationSubsystem* Presentation =
+            GEngine->GetEngineSubsystem<UUIPresentationSubsystem>())
+        {
+            Presentation->Emit(HUDPresentationIds::HPChanged);
+        }
+    }
 }
