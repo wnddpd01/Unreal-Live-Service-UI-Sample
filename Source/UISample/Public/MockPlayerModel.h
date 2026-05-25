@@ -3,10 +3,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "UIModelEvent.h"
 #include "UObject/Object.h"
 #include "MockPlayerModel.generated.h"
-
-DECLARE_MULTICAST_DELEGATE_TwoParams(FOnMockPlayerHPChanged, int32 /*CurrentHP*/, int32 /*MaxHP*/);
 
 UCLASS()
 class UISAMPLE_API UMockPlayerModel : public UObject
@@ -14,17 +13,26 @@ class UISAMPLE_API UMockPlayerModel : public UObject
     GENERATED_BODY()
 
 public:
+    UFUNCTION(BlueprintCallable, Category = "Mock Player")
     void Initialize(int32 InMaxHP);
 
+    UFUNCTION(BlueprintCallable, Category = "Mock Player")
     void ApplyDamage(int32 DamageAmount);
+
+    UFUNCTION(BlueprintCallable, Category = "Mock Player")
     void ApplyHeal(int32 HealAmount);
 
+    UFUNCTION(BlueprintPure, Category = "Mock Player")
     int32 GetCurrentHP() const { return CurrentHP; }
+
+    UFUNCTION(BlueprintPure, Category = "Mock Player")
     int32 GetMaxHP() const { return MaxHP; }
 
-    FOnMockPlayerHPChanged OnHPChanged;
+    UPROPERTY(BlueprintReadOnly, Category = "Model Events")
+    TObjectPtr<UUIModelEvent> HPChanged;
 
 private:
+    void EnsureModelEvents();
     void SetHP(int32 NewHP);
     void BroadcastHPChanged();
 

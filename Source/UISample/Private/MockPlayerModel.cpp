@@ -1,23 +1,13 @@
 #include "MockPlayerModel.h"
 
-#include "Engine/Engine.h"
-#include "UIPresentationSubsystem.h"
-#include "HUDPresenter.h"
-
 void UMockPlayerModel::Initialize(int32 InMaxHP)
 {
+    EnsureModelEvents();
+
     MaxHP = FMath::Max(InMaxHP, 1);
     CurrentHP = MaxHP;
 
-    if (GEngine)
-    {
-        if (UUIPresentationSubsystem* Presentation =
-            GEngine->GetEngineSubsystem<UUIPresentationSubsystem>())
-        {
-            Presentation->RegisterObject(HUDPresentationIds::PlayerModel, this);
-            Presentation->Emit(HUDPresentationIds::HPChanged);
-        }
-    }
+    BroadcastHPChanged();
 }
 
 void UMockPlayerModel::ApplyDamage(int32 DamageAmount)
@@ -28,6 +18,14 @@ void UMockPlayerModel::ApplyDamage(int32 DamageAmount)
 void UMockPlayerModel::ApplyHeal(int32 HealAmount)
 {
     SetHP(CurrentHP + FMath::Max(HealAmount, 0));
+}
+
+void UMockPlayerModel::EnsureModelEvents()
+{
+    if (!HPChanged)
+    {
+        HPChanged = UUIModelEvent::Create(this);
+    }
 }
 
 void UMockPlayerModel::SetHP(int32 NewHP)
@@ -41,12 +39,15 @@ void UMockPlayerModel::SetHP(int32 NewHP)
 
     CurrentHP = ClampedHP;
 
-    if (GEngine)
+    BroadcastHPChanged();
+}
+
+void UMockPlayerModel::BroadcastHPChanged()
+{
+    EnsureModelEvents();
+
+    if (HPChanged)
     {
-        if (UUIPresentationSubsystem* Presentation =
-            GEngine->GetEngineSubsystem<UUIPresentationSubsystem>())
-        {
-            Presentation->Emit(HUDPresentationIds::HPChanged);
-        }
+        HPChanged->Raise();
     }
 }

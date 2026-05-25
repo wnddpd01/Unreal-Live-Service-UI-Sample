@@ -8,7 +8,6 @@ class UHUDViewModel;
 
 namespace HUDPresentationIds
 {
-    inline const FName HPChanged = TEXT("HUD.HPChanged");
     inline const FName DamageRequested = TEXT("HUD.DamageRequested");
     inline const FName HealRequested = TEXT("HUD.HealRequested");
     inline const FName RefreshViewRequested = TEXT("HUD.RefreshViewRequested");
@@ -24,7 +23,7 @@ public:
     static void Install(UUIPresentationSubsystem& Presentation);
 
 private:
-    static void RefreshHP(UUIPresentationSubsystem& Presentation);
+    static void RefreshHP(UUIPresentationSubsystem& Presentation, const UMockPlayerModel& Model);
     static void RequestDamage(UUIPresentationSubsystem& Presentation);
     static void RequestHeal(UUIPresentationSubsystem& Presentation);
     static void RefreshView(UUIPresentationSubsystem& Presentation);

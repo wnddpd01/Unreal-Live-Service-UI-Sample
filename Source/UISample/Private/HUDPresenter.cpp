@@ -7,10 +7,16 @@
 
 void FHUDPresenter::Install(UUIPresentationSubsystem& Presentation)
 {
-    Presentation.Subscribe(HUDPresentationIds::HPChanged, [&Presentation]()
+    Presentation.SubscribeModelEvent<UMockPlayerModel>(
+        [](UMockPlayerModel& Model)
         {
-            FHUDPresenter::RefreshHP(Presentation);
-        });
+            return Model.HPChanged.Get();
+        },
+        [&Presentation](UMockPlayerModel& Model)
+        {
+            FHUDPresenter::RefreshHP(Presentation, Model);
+        }
+    );
 
     Presentation.Subscribe(HUDPresentationIds::DamageRequested, [&Presentation]()
         {
@@ -28,21 +34,21 @@ void FHUDPresenter::Install(UUIPresentationSubsystem& Presentation)
         });
 }
 
-void FHUDPresenter::RefreshHP(UUIPresentationSubsystem& Presentation)
+void FHUDPresenter::RefreshHP(
+    UUIPresentationSubsystem& Presentation,
+    const UMockPlayerModel& Model
+)
 {
-    UMockPlayerModel* Model =
-        Presentation.GetObject<UMockPlayerModel>(HUDPresentationIds::PlayerModel);
-
     UHUDViewModel* ViewModel =
         Presentation.GetObject<UHUDViewModel>(HUDPresentationIds::ViewModel);
 
-    if (!Model || !ViewModel)
+    if (!ViewModel)
     {
         return;
     }
 
-    const int32 MaxHP = FMath::Max(Model->GetMaxHP(), 1);
-    const int32 CurrentHP = FMath::Clamp(Model->GetCurrentHP(), 0, MaxHP);
+    const int32 MaxHP = FMath::Max(Model.GetMaxHP(), 1);
+    const int32 CurrentHP = FMath::Clamp(Model.GetCurrentHP(), 0, MaxHP);
 
     const float HPRatio =
         static_cast<float>(CurrentHP) / static_cast<float>(MaxHP);
@@ -91,29 +97,10 @@ void FHUDPresenter::RefreshView(UUIPresentationSubsystem& Presentation)
     UMockPlayerModel* Model =
         Presentation.GetObject<UMockPlayerModel>(HUDPresentationIds::PlayerModel);
 
-    UHUDViewModel* ViewModel =
-        Presentation.GetObject<UHUDViewModel>(HUDPresentationIds::ViewModel);
-
-    if (!Model || !ViewModel)
+    if (!Model)
     {
         return;
     }
 
-    const int32 MaxHP = FMath::Max(Model->GetMaxHP(), 1);
-    const int32 CurrentHP = FMath::Clamp(Model->GetCurrentHP(), 0, MaxHP);
-
-    const float HPRatio =
-        static_cast<float>(CurrentHP) / static_cast<float>(MaxHP);
-
-    const FText HPText = FText::FromString(
-        FString::Printf(TEXT("%d / %d"), CurrentHP, MaxHP)
-    );
-
-    ViewModel->SetHPDisplayState(
-        CurrentHP,
-        MaxHP,
-        HPRatio,
-        HPText,
-        true
-    );
+    RefreshHP(Presentation, *Model);
 }
