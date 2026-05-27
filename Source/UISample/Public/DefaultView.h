@@ -7,7 +7,6 @@
 namespace DefaultViewPresentationIds
 {
     inline const FName View = TEXT("View.Default");
-    inline const FName Constructed = TEXT("View.Constructed");
 };
 
 UCLASS()
@@ -18,6 +17,21 @@ class UISAMPLE_API UDefaultView : public UUserWidget
 public:
     virtual void NativeConstruct() override;
 
-    UFUNCTION(BlueprintCallable, Category = "View")
-    void EmitViewEvent(FName EventId);
+    UFUNCTION(BlueprintCallable, Category = "View", meta = (BlueprintInternalUseOnly = "true"))
+    void SendViewEvent(FName EventId);
+
+    FName GetViewId() const { return ViewId; }
+    const TArray<FName>& GetDeclaredViewEvents() const { return DeclaredViewEvents; }
+
+protected:
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "View Events")
+    FName ViewId = TEXT("HUD");
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "View Events")
+    TArray<FName> DeclaredViewEvents;
+
+private:
+    FName MakeViewEventId(FName EventName) const;
+    FName NormalizeViewEventId(FName EventId) const;
+    bool IsDeclaredViewEvent(FName EventId) const;
 };

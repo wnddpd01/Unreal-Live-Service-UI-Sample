@@ -1,0 +1,36 @@
+{
+	"version": 1,
+	"events": [
+		{
+			"id": "Model.Player.HPChanged",
+			"kind": "Model",
+			"name": "HPChanged",
+			"owner": "Source/UISample/Public/MockPlayerModel.h",
+			"source": "C++"
+		},
+		{
+			"id": "View.HUD.Constructed",
+			"kind": "View",
+			"name": "Constructed",
+			"owner": "/Game/UI/BP_SampleHUDWidget",
+			"source": "WBP",
+			"viewId": "HUD"
+		},
+		{
+			"id": "View.HUD.DamageButtonClicked",
+			"kind": "View",
+			"name": "DamageButtonClicked",
+			"owner": "/Game/UI/BP_SampleHUDWidget",
+			"source": "WBP",
+			"viewId": "HUD"
+		},
+		{
+			"id": "View.HUD.HealButtonClicked",
+			"kind": "View",
+			"name": "HealButtonClicked",
+			"owner": "/Game/UI/BP_SampleHUDWidget",
+			"source": "WBP",
+			"viewId": "HUD"
+		}
+	]
+}

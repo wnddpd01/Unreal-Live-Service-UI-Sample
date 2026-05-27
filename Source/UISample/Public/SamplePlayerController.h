@@ -22,11 +22,6 @@ protected:
     TSubclassOf<UDefaultView> HUDWidgetClass;
 
 private:
-    void HandleDamageClicked();
-    void HandleHealClicked();
-    void HandleHPChanged(int32 CurrentHP, int32 MaxHP);
-
-private:
     UPROPERTY(Transient)
     TObjectPtr<UDefaultView> HUDWidgetInstance;
 

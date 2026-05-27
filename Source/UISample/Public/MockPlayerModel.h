@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "UIModelEvent.h"
+#include "UIEventDeclarationMacros.h"
 #include "UObject/Object.h"
 #include "MockPlayerModel.generated.h"
 
@@ -28,11 +28,9 @@ public:
     UFUNCTION(BlueprintPure, Category = "Mock Player")
     int32 GetMaxHP() const { return MaxHP; }
 
-    UPROPERTY(BlueprintReadOnly, Category = "Model Events")
-    TObjectPtr<UUIModelEvent> HPChanged;
+    UI_MODEL_EVENT(Model.Player.HPChanged)
 
 private:
-    void EnsureModelEvents();
     void SetHP(int32 NewHP);
     void BroadcastHPChanged();
 

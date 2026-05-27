@@ -11,5 +11,6 @@ public class UISampleEditorTarget : TargetRules
 		DefaultBuildSettings = BuildSettingsVersion.V6;
 		IncludeOrderVersion = EngineIncludeOrderVersion.Unreal5_7;
 		ExtraModuleNames.Add("UISample");
+		ExtraModuleNames.Add("UISampleEditor");
 	}
 }

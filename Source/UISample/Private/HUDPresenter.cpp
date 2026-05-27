@@ -2,44 +2,49 @@
 
 #include "DefaultView.h"
 #include "MockPlayerModel.h"
-#include "UIPresentationSubsystem.h"
+#include "GeneratedUIEventIds.h"
+#include "UIMessageSubsystem.h"
 #include "Blueprint/WidgetTree.h"
 #include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
 
-void FHUDPresenter::Install(UUIPresentationSubsystem& Presentation)
+void FHUDPresenter::Install(UUIMessageSubsystem& Messages)
 {
-    Presentation.SubscribeModelEvent<UMockPlayerModel>(
-        &UMockPlayerModel::HPChanged,
-        [&Presentation](UMockPlayerModel& Model)
+    Messages.Subscribe(UIEvents::Model::Player::HPChanged, [&Messages](const FUIMessage& Message)
         {
-            FHUDPresenter::RefreshHP(Presentation, Model);
+            UMockPlayerModel* Model = Cast<UMockPlayerModel>(Message.GetSource());
+            if (!Model)
+            {
+                return;
+            }
+
+            FHUDPresenter::RefreshHP(Messages, *Model);
         }
     );
 
-    Presentation.Subscribe(HUDPresentationIds::DamageRequested, [&Presentation]()
+    Messages.Subscribe(UIEvents::View::HUD::DamageButtonClicked, [&Messages](const FUIMessage& Message)
         {
-            FHUDPresenter::RequestDamage(Presentation);
+            FHUDPresenter::RequestDamage(Messages);
         });
 
-    Presentation.Subscribe(HUDPresentationIds::HealRequested, [&Presentation]()
+    Messages.Subscribe(UIEvents::View::HUD::HealButtonClicked, [&Messages](const FUIMessage& Message)
         {
-            FHUDPresenter::RequestHeal(Presentation);
+            FHUDPresenter::RequestHeal(Messages);
         });
 
-    Presentation.Subscribe(DefaultViewPresentationIds::Constructed, [&Presentation]()
+    Messages.Subscribe(UIEvents::View::HUD::Constructed, [&Messages](const FUIMessage& Message)
         {
-            FHUDPresenter::RefreshView(Presentation);
+            FHUDPresenter::RefreshView(Messages);
         });
 }
 
 void FHUDPresenter::RefreshHP(
-    UUIPresentationSubsystem& Presentation,
+    UUIMessageSubsystem& Messages,
     const UMockPlayerModel& Model
 )
 {
     UDefaultView* View =
-        Presentation.GetObject<UDefaultView>(DefaultViewPresentationIds::View);
+        Messages.GetObject<UDefaultView>(DefaultViewPresentationIds::View);
 
     if (!View)
     {
@@ -84,10 +89,10 @@ void FHUDPresenter::UpdateHPView(
     }
 }
 
-void FHUDPresenter::RequestDamage(UUIPresentationSubsystem& Presentation)
+void FHUDPresenter::RequestDamage(UUIMessageSubsystem& Messages)
 {
     UMockPlayerModel* Model =
-        Presentation.GetObject<UMockPlayerModel>(HUDPresentationIds::PlayerModel);
+        Messages.GetObject<UMockPlayerModel>(HUDPresentationIds::PlayerModel);
 
     if (!Model)
     {
@@ -97,10 +102,10 @@ void FHUDPresenter::RequestDamage(UUIPresentationSubsystem& Presentation)
     Model->ApplyDamage(10);
 }
 
-void FHUDPresenter::RequestHeal(UUIPresentationSubsystem& Presentation)
+void FHUDPresenter::RequestHeal(UUIMessageSubsystem& Messages)
 {
     UMockPlayerModel* Model =
-        Presentation.GetObject<UMockPlayerModel>(HUDPresentationIds::PlayerModel);
+        Messages.GetObject<UMockPlayerModel>(HUDPresentationIds::PlayerModel);
 
     if (!Model)
     {
@@ -110,15 +115,15 @@ void FHUDPresenter::RequestHeal(UUIPresentationSubsystem& Presentation)
     Model->ApplyHeal(10);
 }
 
-void FHUDPresenter::RefreshView(UUIPresentationSubsystem& Presentation)
+void FHUDPresenter::RefreshView(UUIMessageSubsystem& Messages)
 {
     UMockPlayerModel* Model =
-        Presentation.GetObject<UMockPlayerModel>(HUDPresentationIds::PlayerModel);
+        Messages.GetObject<UMockPlayerModel>(HUDPresentationIds::PlayerModel);
 
     if (!Model)
     {
         return;
     }
 
-    RefreshHP(Presentation, *Model);
+    RefreshHP(Messages, *Model);
 }

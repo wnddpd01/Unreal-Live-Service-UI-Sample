@@ -1,9 +1,11 @@
 #include "MockPlayerModel.h"
 
+#include "GeneratedUIEventIds.h"
+#include "UIMessageSubsystem.h"
+#include "Engine/Engine.h"
+
 void UMockPlayerModel::Initialize(int32 InMaxHP)
 {
-    EnsureModelEvents();
-
     MaxHP = FMath::Max(InMaxHP, 1);
     CurrentHP = MaxHP;
 
@@ -18,14 +20,6 @@ void UMockPlayerModel::ApplyDamage(int32 DamageAmount)
 void UMockPlayerModel::ApplyHeal(int32 HealAmount)
 {
     SetHP(CurrentHP + FMath::Max(HealAmount, 0));
-}
-
-void UMockPlayerModel::EnsureModelEvents()
-{
-    if (!HPChanged)
-    {
-        HPChanged = UUIModelEvent::Create(this);
-    }
 }
 
 void UMockPlayerModel::SetHP(int32 NewHP)
@@ -44,10 +38,14 @@ void UMockPlayerModel::SetHP(int32 NewHP)
 
 void UMockPlayerModel::BroadcastHPChanged()
 {
-    EnsureModelEvents();
-
-    if (HPChanged)
+    if (!GEngine)
     {
-        HPChanged->Raise();
+        return;
+    }
+
+    if (UUIMessageSubsystem* Messages =
+        GEngine->GetEngineSubsystem<UUIMessageSubsystem>())
+    {
+        Messages->Send(UIEvents::Model::Player::HPChanged, this);
     }
 }

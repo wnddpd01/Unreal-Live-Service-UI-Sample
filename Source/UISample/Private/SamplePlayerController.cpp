@@ -2,7 +2,7 @@
 
 #include "DefaultView.h"
 #include "MockPlayerModel.h"
-#include "UIPresentationSubsystem.h"
+#include "UIMessageSubsystem.h"
 #include "Blueprint/UserWidget.h"
 #include "Engine/Engine.h"
 #include "HUDPresenter.h"
@@ -20,10 +20,10 @@ void ASamplePlayerController::BeginPlay()
 
     if (GEngine)
     {
-        if (UUIPresentationSubsystem* Presentation =
-            GEngine->GetEngineSubsystem<UUIPresentationSubsystem>())
+        if (UUIMessageSubsystem* Messages =
+            GEngine->GetEngineSubsystem<UUIMessageSubsystem>())
         {
-            Presentation->RegisterObject(HUDPresentationIds::PlayerModel, PlayerModel);
+            Messages->RegisterObject(HUDPresentationIds::PlayerModel, PlayerModel);
         }
     }
 
