@@ -10,6 +10,14 @@
 
 void FHUDPresenter::Install(UUIMessageSubsystem& Messages)
 {
+    static TWeakObjectPtr<UUIMessageSubsystem> InstalledMessages;
+    if (InstalledMessages.Get() == &Messages)
+    {
+        return;
+    }
+
+    InstalledMessages = &Messages;
+
     Messages.Subscribe(UIEvents::Model::Player::HPChanged, [&Messages](const FUIMessage& Message)
         {
             UMockPlayerModel* Model = Cast<UMockPlayerModel>(Message.GetSource());

@@ -1,12 +1,8 @@
 #include "UIMessageSubsystem.h"
 
-#include "HUDPresenter.h"
-
 void UUIMessageSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
     Super::Initialize(Collection);
-
-    InstallPresenters();
 
     UE_LOG(LogTemp, Log, TEXT("UIMessageSubsystem initialized."));
 }
@@ -67,9 +63,4 @@ void UUIMessageSubsystem::RegisterObject(FName ObjectId, UObject* Object)
     }
 
     ObjectRegistry.Add(ObjectId, Object);
-}
-
-void UUIMessageSubsystem::InstallPresenters()
-{
-    FHUDPresenter::Install(*this);
 }

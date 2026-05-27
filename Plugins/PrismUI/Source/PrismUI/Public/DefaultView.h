@@ -10,7 +10,7 @@ namespace DefaultViewPresentationIds
 };
 
 UCLASS()
-class UISAMPLE_API UDefaultView : public UUserWidget
+class PRISMUI_API UDefaultView : public UUserWidget
 {
     GENERATED_BODY()
 

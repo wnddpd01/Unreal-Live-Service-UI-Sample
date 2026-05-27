@@ -5,7 +5,7 @@
 #include "K2Node_SendViewEvent.generated.h"
 
 UCLASS()
-class UISAMPLEEDITOR_API UK2Node_SendViewEvent : public UK2Node_CallFunction
+class PRISMUIEDITOR_API UK2Node_SendViewEvent : public UK2Node_CallFunction
 {
     GENERATED_BODY()
 

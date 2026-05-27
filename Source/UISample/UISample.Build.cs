@@ -11,7 +11,7 @@ public class UISample : ModuleRules
 
 		PublicIncludePaths.Add(Path.Combine(ModuleDirectory, "UIEvents"));
 	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "UMG" });
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "UMG", "PrismUI" });
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
 

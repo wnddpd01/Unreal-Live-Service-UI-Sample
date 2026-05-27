@@ -5,7 +5,7 @@
 #include "UIMessageSubsystem.generated.h"
 
 USTRUCT(BlueprintType)
-struct UISAMPLE_API FUIMessage
+struct PRISMUI_API FUIMessage
 {
     GENERATED_BODY()
 
@@ -21,7 +21,7 @@ struct UISAMPLE_API FUIMessage
 };
 
 UCLASS()
-class UISAMPLE_API UUIMessageSubsystem : public UEngineSubsystem
+class PRISMUI_API UUIMessageSubsystem : public UEngineSubsystem
 {
     GENERATED_BODY()
 
@@ -57,9 +57,6 @@ public:
 
         return Cast<T>(FoundObject->Get());
     }
-
-public:
-    void InstallPresenters();
 
 private:
     TMap<FName, TArray<TFunction<void(const FUIMessage&)>>> MessageHandlers;

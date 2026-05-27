@@ -12,14 +12,13 @@
 				"Engine",
 				"CoreUObject"
 			]
-		},
-		{
-			"Name": "UISampleEditor",
-			"Type": "Editor",
-			"LoadingPhase": "Default"
 		}
 	],
 	"Plugins": [
+		{
+			"Name": "PrismUI",
+			"Enabled": true
+		},
 		{
 			"Name": "ModelingToolsEditorMode",
 			"Enabled": true

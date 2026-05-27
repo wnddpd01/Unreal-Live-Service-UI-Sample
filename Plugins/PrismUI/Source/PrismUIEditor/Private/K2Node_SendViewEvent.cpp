@@ -47,13 +47,13 @@ void UK2Node_SendViewEvent::AllocateDefaultPins()
 
 FText UK2Node_SendViewEvent::GetNodeTitle(ENodeTitleType::Type TitleType) const
 {
-    return NSLOCTEXT("UISampleEditor", "SendViewEventNodeTitle", "Send View Event");
+    return NSLOCTEXT("PrismUIEditor", "SendViewEventNodeTitle", "Send View Event");
 }
 
 FText UK2Node_SendViewEvent::GetTooltipText() const
 {
     return NSLOCTEXT(
-        "UISampleEditor",
+        "PrismUIEditor",
         "SendViewEventNodeTooltip",
         "Sends a view event declared on this DefaultView Blueprint."
     );
@@ -61,7 +61,7 @@ FText UK2Node_SendViewEvent::GetTooltipText() const
 
 FText UK2Node_SendViewEvent::GetMenuCategory() const
 {
-    return NSLOCTEXT("UISampleEditor", "UIViewMenuCategory", "UI|View");
+    return NSLOCTEXT("PrismUIEditor", "UIViewMenuCategory", "UI|View");
 }
 
 bool UK2Node_SendViewEvent::CanPasteHere(const UEdGraph* TargetGraph) const

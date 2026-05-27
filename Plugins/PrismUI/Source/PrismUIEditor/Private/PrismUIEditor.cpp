@@ -104,7 +104,7 @@ public:
     }
 };
 
-class FUISampleEditorModule : public IModuleInterface
+class FPrismUIEditorModule : public IModuleInterface
 {
 public:
     virtual void StartupModule() override
@@ -126,4 +126,4 @@ private:
     TSharedPtr<FUIViewEventPinFactory> ViewEventPinFactory;
 };
 
-IMPLEMENT_MODULE(FUISampleEditorModule, UISampleEditor)
+IMPLEMENT_MODULE(FPrismUIEditorModule, PrismUIEditor)
