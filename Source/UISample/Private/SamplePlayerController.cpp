@@ -1,7 +1,7 @@
 #include "SamplePlayerController.h"
 
+#include "DefaultView.h"
 #include "MockPlayerModel.h"
-#include "SampleHUDWidget.h"
 #include "UIPresentationSubsystem.h"
 #include "Blueprint/UserWidget.h"
 #include "Engine/Engine.h"
@@ -33,7 +33,7 @@ void ASamplePlayerController::BeginPlay()
         return;
     }
 
-    HUDWidgetInstance = CreateWidget<USampleHUDWidget>(this, HUDWidgetClass);
+    HUDWidgetInstance = CreateWidget<UDefaultView>(this, HUDWidgetClass);
     if (!HUDWidgetInstance)
     {
         UE_LOG(LogTemp, Warning, TEXT("Failed to create HUDWidgetInstance."));

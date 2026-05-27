@@ -6,7 +6,7 @@
 #include "GameFramework/PlayerController.h"
 #include "SamplePlayerController.generated.h"
 
-class USampleHUDWidget;
+class UDefaultView;
 class UMockPlayerModel;
 
 UCLASS()
@@ -19,7 +19,7 @@ protected:
 
 protected:
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI")
-    TSubclassOf<USampleHUDWidget> HUDWidgetClass;
+    TSubclassOf<UDefaultView> HUDWidgetClass;
 
 private:
     void HandleDamageClicked();
@@ -28,7 +28,7 @@ private:
 
 private:
     UPROPERTY(Transient)
-    TObjectPtr<USampleHUDWidget> HUDWidgetInstance;
+    TObjectPtr<UDefaultView> HUDWidgetInstance;
 
     UPROPERTY(Transient)
     TObjectPtr<UMockPlayerModel> PlayerModel;

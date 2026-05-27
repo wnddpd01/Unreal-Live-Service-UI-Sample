@@ -38,6 +38,21 @@ public:
     void RegisterModelEvent(UUIModelEvent* ModelEvent);
     void UnregisterModelEvent(UUIModelEvent* ModelEvent);
 
+    template <typename ModelType, typename HandlerType>
+    void SubscribeModelEvent(
+        TObjectPtr<UUIModelEvent> ModelType::* EventMember,
+        HandlerType&& Handler
+    )
+    {
+        SubscribeModelEvent<ModelType>(
+            [EventMember](ModelType& Model) -> UUIModelEvent*
+            {
+                return (Model.*EventMember).Get();
+            },
+            Forward<HandlerType>(Handler)
+        );
+    }
+
     template <typename ModelType, typename EventAccessorType, typename HandlerType>
     void SubscribeModelEvent(EventAccessorType&& EventAccessor, HandlerType&& Handler)
     {

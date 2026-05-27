@@ -1,17 +1,16 @@
 #include "HUDPresenter.h"
 
-#include "HUDViewModel.h"
+#include "DefaultView.h"
 #include "MockPlayerModel.h"
-#include "SampleHUDWidget.h"
 #include "UIPresentationSubsystem.h"
+#include "Blueprint/WidgetTree.h"
+#include "Components/ProgressBar.h"
+#include "Components/TextBlock.h"
 
 void FHUDPresenter::Install(UUIPresentationSubsystem& Presentation)
 {
     Presentation.SubscribeModelEvent<UMockPlayerModel>(
-        [](UMockPlayerModel& Model)
-        {
-            return Model.HPChanged.Get();
-        },
+        &UMockPlayerModel::HPChanged,
         [&Presentation](UMockPlayerModel& Model)
         {
             FHUDPresenter::RefreshHP(Presentation, Model);
@@ -28,7 +27,7 @@ void FHUDPresenter::Install(UUIPresentationSubsystem& Presentation)
             FHUDPresenter::RequestHeal(Presentation);
         });
 
-    Presentation.Subscribe(HUDPresentationIds::RefreshViewRequested, [&Presentation]()
+    Presentation.Subscribe(DefaultViewPresentationIds::Constructed, [&Presentation]()
         {
             FHUDPresenter::RefreshView(Presentation);
         });
@@ -39,10 +38,23 @@ void FHUDPresenter::RefreshHP(
     const UMockPlayerModel& Model
 )
 {
-    UHUDViewModel* ViewModel =
-        Presentation.GetObject<UHUDViewModel>(HUDPresentationIds::ViewModel);
+    UDefaultView* View =
+        Presentation.GetObject<UDefaultView>(DefaultViewPresentationIds::View);
 
-    if (!ViewModel)
+    if (!View)
+    {
+        return;
+    }
+
+    UpdateHPView(*View, Model);
+}
+
+void FHUDPresenter::UpdateHPView(
+    UDefaultView& View,
+    const UMockPlayerModel& Model
+)
+{
+    if (!View.WidgetTree)
     {
         return;
     }
@@ -57,13 +69,19 @@ void FHUDPresenter::RefreshHP(
         FString::Printf(TEXT("%d / %d"), CurrentHP, MaxHP)
     );
 
-    ViewModel->SetHPDisplayState(
-        CurrentHP,
-        MaxHP,
-        HPRatio,
-        HPText,
-        true
-    );
+    if (UTextBlock* HPTextBlock =
+        Cast<UTextBlock>(View.WidgetTree->FindWidget(TEXT("HPText"))))
+    {
+        HPTextBlock->SetText(HPText);
+        HPTextBlock->SetVisibility(ESlateVisibility::Visible);
+    }
+
+    if (UProgressBar* HPBar =
+        Cast<UProgressBar>(View.WidgetTree->FindWidget(TEXT("HPBar"))))
+    {
+        HPBar->SetPercent(HPRatio);
+        HPBar->SetVisibility(ESlateVisibility::Visible);
+    }
 }
 
 void FHUDPresenter::RequestDamage(UUIPresentationSubsystem& Presentation)
