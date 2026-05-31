@@ -1,8 +1,12 @@
 #include "UIMessageSubsystem.h"
 
+#include "UIMessagePresenterRegistry.h"
+
 void UUIMessageSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
     Super::Initialize(Collection);
+
+    UIMessagePresenterRegistry::InstallAll(*this);
 
     UE_LOG(LogTemp, Log, TEXT("UIMessageSubsystem initialized."));
 }

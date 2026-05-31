@@ -23,7 +23,6 @@ void ASamplePlayerController::BeginPlay()
         if (UUIMessageSubsystem* Messages =
             GEngine->GetEngineSubsystem<UUIMessageSubsystem>())
         {
-            FHUDPresenter::Install(*Messages);
             Messages->RegisterObject(HUDPresentationIds::PlayerModel, PlayerModel);
         }
     }

@@ -3,10 +3,13 @@
 #include "DefaultView.h"
 #include "MockPlayerModel.h"
 #include "GeneratedUIEventIds.h"
+#include "UIMessagePresenterRegistry.h"
 #include "UIMessageSubsystem.h"
 #include "Blueprint/WidgetTree.h"
 #include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
+
+PRISMUI_REGISTER_MESSAGE_PRESENTER(FHUDPresenter)
 
 void FHUDPresenter::Install(UUIMessageSubsystem& Messages)
 {
