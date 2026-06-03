@@ -18,6 +18,13 @@ struct PRISMUI_API FUIMessage
     {
         return Source.Get();
     }
+
+    TWeakObjectPtr<UObject> Target;
+
+    UObject* GetTarget() const
+    {
+        return Target.Get();
+    }
 };
 
 UCLASS()
@@ -37,28 +44,12 @@ public:
         MessageHandlers.FindOrAdd(EventId).Add(MoveTemp(WrappedHandler));
     }
 
-    void Send(FName EventId, UObject* Source = nullptr);
+    void Send(FName EventId, UObject* Source = nullptr, UObject* Target = nullptr);
     void Send(const FUIMessage& Message);
 
     UFUNCTION(BlueprintCallable, Category = "UI|Messages")
-    void SendUIMessage(FName EventId, UObject* Source = nullptr);
-
-public:
-    void RegisterObject(FName ObjectId, UObject* Object);
-
-    template <typename T>
-    T* GetObject(FName ObjectId) const
-    {
-        const TWeakObjectPtr<UObject>* FoundObject = ObjectRegistry.Find(ObjectId);
-        if (!FoundObject)
-        {
-            return nullptr;
-        }
-
-        return Cast<T>(FoundObject->Get());
-    }
+    void SendUIMessage(FName EventId, UObject* Source = nullptr, UObject* Target = nullptr);
 
 private:
     TMap<FName, TArray<TFunction<void(const FUIMessage&)>>> MessageHandlers;
-    TMap<FName, TWeakObjectPtr<UObject>> ObjectRegistry;
 };

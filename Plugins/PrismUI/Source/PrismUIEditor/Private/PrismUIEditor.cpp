@@ -8,34 +8,6 @@
 
 namespace
 {
-    FName NormalizeViewEventName(FName ViewId, FName EventId)
-    {
-        if (ViewId.IsNone() || EventId.IsNone())
-        {
-            return NAME_None;
-        }
-
-        const FString EventIdString = EventId.ToString();
-        const FString ViewPrefix = FString::Printf(TEXT("View.%s."), *ViewId.ToString());
-        if (EventIdString.StartsWith(ViewPrefix))
-        {
-            return FName(*EventIdString.RightChop(ViewPrefix.Len()));
-        }
-
-        const FString LegacyPrefix = FString::Printf(TEXT("%s."), *ViewId.ToString());
-        if (EventIdString.StartsWith(LegacyPrefix))
-        {
-            return FName(*EventIdString.RightChop(LegacyPrefix.Len()));
-        }
-
-        if (!EventIdString.Contains(TEXT(".")))
-        {
-            return EventId;
-        }
-
-        return NAME_None;
-    }
-
     bool IsSendViewEventPin(const UEdGraphPin* Pin)
     {
         if (!Pin || Pin->PinName != UK2Node_SendViewEvent::EventIdPinName)
@@ -50,9 +22,9 @@ namespace
             GET_FUNCTION_NAME_CHECKED(UDefaultView, SendViewEvent);
     }
 
-    TArray<FName> GetDeclaredViewEventNames(const UEdGraphPin* Pin)
+    TArray<FName> GetDeclaredViewEventIds(const UEdGraphPin* Pin)
     {
-        TArray<FName> EventNames;
+        TArray<FName> EventIds;
 
         const UEdGraphNode* OwningNode = Pin ? Pin->GetOwningNode() : nullptr;
         const UBlueprint* Blueprint =
@@ -62,25 +34,22 @@ namespace
             ViewClass ? Cast<UDefaultView>(ViewClass->GetDefaultObject(false)) : nullptr;
         if (!DefaultView)
         {
-            return EventNames;
+            return EventIds;
         }
 
-        const FName ViewId = DefaultView->GetViewId();
-        for (const FName& EventName : DefaultView->GetDeclaredViewEvents())
+        for (const FName& EventId : DefaultView->GetDeclaredViewEvents())
         {
-            const FName NormalizedEventName =
-                NormalizeViewEventName(ViewId, EventName);
-            if (!NormalizedEventName.IsNone())
+            if (!EventId.IsNone())
             {
-                EventNames.AddUnique(NormalizedEventName);
+                EventIds.AddUnique(EventId);
             }
         }
 
-        EventNames.Sort([](const FName& Left, const FName& Right)
+        EventIds.Sort([](const FName& Left, const FName& Right)
             {
                 return Left.LexicalLess(Right);
             });
-        return EventNames;
+        return EventIds;
     }
 }
 
@@ -95,9 +64,9 @@ public:
         }
 
         TArray<TSharedPtr<FName>> NameList;
-        for (const FName& EventName : GetDeclaredViewEventNames(Pin))
+        for (const FName& EventId : GetDeclaredViewEventIds(Pin))
         {
-            NameList.Add(MakeShared<FName>(EventName));
+            NameList.Add(MakeShared<FName>(EventId));
         }
 
         return SNew(SGraphPinNameList, Pin, NameList);

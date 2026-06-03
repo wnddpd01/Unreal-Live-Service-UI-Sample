@@ -133,9 +133,9 @@ void UK2Node_SendViewEvent::ValidateNodeDuringCompilation(
     }
 }
 
-TArray<FName> UK2Node_SendViewEvent::GetDeclaredViewEventNames() const
+TArray<FName> UK2Node_SendViewEvent::GetDeclaredViewEventIds() const
 {
-    TArray<FName> EventNames;
+    TArray<FName> EventIds;
 
     const UBlueprint* Blueprint = GetTypedOuter<UBlueprint>();
     const UClass* ViewClass = Blueprint ? Blueprint->GeneratedClass.Get() : nullptr;
@@ -143,25 +143,22 @@ TArray<FName> UK2Node_SendViewEvent::GetDeclaredViewEventNames() const
         ViewClass ? Cast<UDefaultView>(ViewClass->GetDefaultObject(false)) : nullptr;
     if (!DefaultView)
     {
-        return EventNames;
+        return EventIds;
     }
 
-    const FName ViewId = DefaultView->GetViewId();
-    for (const FName& EventName : DefaultView->GetDeclaredViewEvents())
+    for (const FName& EventId : DefaultView->GetDeclaredViewEvents())
     {
-        const FName NormalizedEventName =
-            NormalizeViewEventName(ViewId, EventName);
-        if (!NormalizedEventName.IsNone())
+        if (!EventId.IsNone())
         {
-            EventNames.AddUnique(NormalizedEventName);
+            EventIds.AddUnique(EventId);
         }
     }
 
-    EventNames.Sort([](const FName& Left, const FName& Right)
+    EventIds.Sort([](const FName& Left, const FName& Right)
         {
             return Left.LexicalLess(Right);
         });
-    return EventNames;
+    return EventIds;
 }
 
 bool UK2Node_SendViewEvent::IsDeclaredEventId(FName EventId) const
@@ -180,60 +177,13 @@ bool UK2Node_SendViewEvent::IsDeclaredEventId(FName EventId) const
         return true;
     }
 
-    const FName ViewId = DefaultView->GetViewId();
-    const FName EventName = NormalizeViewEventName(ViewId, EventId);
-    for (const FName& DeclaredEventName : DefaultView->GetDeclaredViewEvents())
+    for (const FName& DeclaredEventId : DefaultView->GetDeclaredViewEvents())
     {
-        if (NormalizeViewEventName(ViewId, DeclaredEventName) == EventName)
+        if (DeclaredEventId == EventId)
         {
             return true;
         }
     }
 
     return false;
-}
-
-FName UK2Node_SendViewEvent::MakeViewEventId(FName ViewId, FName EventName)
-{
-    if (ViewId.IsNone() || EventName.IsNone())
-    {
-        return NAME_None;
-    }
-
-    return FName(*FString::Printf(
-        TEXT("View.%s.%s"),
-        *ViewId.ToString(),
-        *EventName.ToString()
-    ));
-}
-
-FName UK2Node_SendViewEvent::NormalizeViewEventName(
-    FName ViewId,
-    FName EventId
-)
-{
-    if (ViewId.IsNone() || EventId.IsNone())
-    {
-        return NAME_None;
-    }
-
-    const FString EventIdString = EventId.ToString();
-    const FString ViewPrefix = FString::Printf(TEXT("View.%s."), *ViewId.ToString());
-    if (EventIdString.StartsWith(ViewPrefix))
-    {
-        return FName(*EventIdString.RightChop(ViewPrefix.Len()));
-    }
-
-    const FString LegacyPrefix = FString::Printf(TEXT("%s."), *ViewId.ToString());
-    if (EventIdString.StartsWith(LegacyPrefix))
-    {
-        return FName(*EventIdString.RightChop(LegacyPrefix.Len()));
-    }
-
-    if (!EventIdString.Contains(TEXT(".")))
-    {
-        return EventId;
-    }
-
-    return NAME_None;
 }

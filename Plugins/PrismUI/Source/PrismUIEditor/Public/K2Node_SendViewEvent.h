@@ -21,10 +21,6 @@ public:
     virtual bool IsActionFilteredOut(const FBlueprintActionFilter& Filter) override;
     virtual void ValidateNodeDuringCompilation(FCompilerResultsLog& MessageLog) const override;
 
-    TArray<FName> GetDeclaredViewEventNames() const;
+    TArray<FName> GetDeclaredViewEventIds() const;
     bool IsDeclaredEventId(FName EventId) const;
-
-private:
-    static FName MakeViewEventId(FName ViewId, FName EventName);
-    static FName NormalizeViewEventName(FName ViewId, FName EventId);
 };

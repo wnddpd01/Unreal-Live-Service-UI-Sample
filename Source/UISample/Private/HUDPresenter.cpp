@@ -11,6 +11,21 @@
 
 PRISMUI_REGISTER_MESSAGE_PRESENTER(FHUDPresenter)
 
+namespace
+{
+    struct FHUDBinding
+    {
+        TWeakObjectPtr<UMockPlayerModel> Model;
+        TWeakObjectPtr<UDefaultView> View;
+    };
+
+    FHUDBinding& GetHUDBinding()
+    {
+        static FHUDBinding Binding;
+        return Binding;
+    }
+}
+
 void FHUDPresenter::Install(UUIMessageSubsystem& Messages)
 {
     static TWeakObjectPtr<UUIMessageSubsystem> InstalledMessages;
@@ -21,7 +36,12 @@ void FHUDPresenter::Install(UUIMessageSubsystem& Messages)
 
     InstalledMessages = &Messages;
 
-    Messages.Subscribe(UIEvents::Model::Player::HPChanged, [&Messages](const FUIMessage& Message)
+    Messages.Subscribe(UIEvents::Player::HUD::ConnectRequested, [](const FUIMessage& Message)
+        {
+            FHUDPresenter::Connect(Message);
+        });
+
+    Messages.Subscribe(UIEvents::Player::HPChanged, [](const FUIMessage& Message)
         {
             UMockPlayerModel* Model = Cast<UMockPlayerModel>(Message.GetSource());
             if (!Model)
@@ -29,34 +49,52 @@ void FHUDPresenter::Install(UUIMessageSubsystem& Messages)
                 return;
             }
 
-            FHUDPresenter::RefreshHP(Messages, *Model);
+            FHUDPresenter::RefreshHP(*Model);
         }
     );
 
-    Messages.Subscribe(UIEvents::View::HUD::DamageButtonClicked, [&Messages](const FUIMessage& Message)
+    Messages.Subscribe(UIEvents::Player::HUD::DamageButtonClicked, [](const FUIMessage&)
         {
-            FHUDPresenter::RequestDamage(Messages);
+            FHUDPresenter::RequestDamage();
         });
 
-    Messages.Subscribe(UIEvents::View::HUD::HealButtonClicked, [&Messages](const FUIMessage& Message)
+    Messages.Subscribe(UIEvents::Player::HUD::HealButtonClicked, [](const FUIMessage&)
         {
-            FHUDPresenter::RequestHeal(Messages);
+            FHUDPresenter::RequestHeal();
         });
 
-    Messages.Subscribe(UIEvents::View::HUD::Constructed, [&Messages](const FUIMessage& Message)
+    Messages.Subscribe(UIEvents::Player::HUD::Constructed, [](const FUIMessage& Message)
         {
-            FHUDPresenter::RefreshView(Messages);
+            FHUDPresenter::RefreshView(Message);
         });
 }
 
-void FHUDPresenter::RefreshHP(
-    UUIMessageSubsystem& Messages,
-    const UMockPlayerModel& Model
-)
+void FHUDPresenter::Connect(const FUIMessage& Message)
 {
-    UDefaultView* View =
-        Messages.GetObject<UDefaultView>(DefaultViewPresentationIds::View);
+    UMockPlayerModel* Model = Cast<UMockPlayerModel>(Message.GetSource());
+    UDefaultView* View = Cast<UDefaultView>(Message.GetTarget());
 
+    if (!Model || !View)
+    {
+        return;
+    }
+
+    FHUDBinding& Binding = GetHUDBinding();
+    Binding.Model = Model;
+    Binding.View = View;
+
+    UpdateHPView(*View, *Model);
+}
+
+void FHUDPresenter::RefreshHP(const UMockPlayerModel& Model)
+{
+    FHUDBinding& Binding = GetHUDBinding();
+    if (Binding.Model.IsValid() && Binding.Model.Get() != &Model)
+    {
+        return;
+    }
+
+    UDefaultView* View = Binding.View.Get();
     if (!View)
     {
         return;
@@ -100,11 +138,9 @@ void FHUDPresenter::UpdateHPView(
     }
 }
 
-void FHUDPresenter::RequestDamage(UUIMessageSubsystem& Messages)
+void FHUDPresenter::RequestDamage()
 {
-    UMockPlayerModel* Model =
-        Messages.GetObject<UMockPlayerModel>(HUDPresentationIds::PlayerModel);
-
+    UMockPlayerModel* Model = GetHUDBinding().Model.Get();
     if (!Model)
     {
         return;
@@ -113,11 +149,9 @@ void FHUDPresenter::RequestDamage(UUIMessageSubsystem& Messages)
     Model->ApplyDamage(10);
 }
 
-void FHUDPresenter::RequestHeal(UUIMessageSubsystem& Messages)
+void FHUDPresenter::RequestHeal()
 {
-    UMockPlayerModel* Model =
-        Messages.GetObject<UMockPlayerModel>(HUDPresentationIds::PlayerModel);
-
+    UMockPlayerModel* Model = GetHUDBinding().Model.Get();
     if (!Model)
     {
         return;
@@ -126,15 +160,20 @@ void FHUDPresenter::RequestHeal(UUIMessageSubsystem& Messages)
     Model->ApplyHeal(10);
 }
 
-void FHUDPresenter::RefreshView(UUIMessageSubsystem& Messages)
+void FHUDPresenter::RefreshView(const FUIMessage& Message)
 {
-    UMockPlayerModel* Model =
-        Messages.GetObject<UMockPlayerModel>(HUDPresentationIds::PlayerModel);
+    FHUDBinding& Binding = GetHUDBinding();
+    UDefaultView* View = Cast<UDefaultView>(Message.GetSource());
+    if (Binding.View.IsValid() && Binding.View.Get() != View)
+    {
+        return;
+    }
 
+    UMockPlayerModel* Model = Binding.Model.Get();
     if (!Model)
     {
         return;
     }
 
-    RefreshHP(Messages, *Model);
+    RefreshHP(*Model);
 }

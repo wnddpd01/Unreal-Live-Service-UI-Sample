@@ -28,7 +28,7 @@ public:
     UFUNCTION(BlueprintPure, Category = "Mock Player")
     int32 GetMaxHP() const { return MaxHP; }
 
-    UI_MODEL_EVENT(Model.Player.HPChanged)
+    PRISMUI_EVENT_DECLARE(Player.HPChanged)
 
 private:
     void SetHP(int32 NewHP);

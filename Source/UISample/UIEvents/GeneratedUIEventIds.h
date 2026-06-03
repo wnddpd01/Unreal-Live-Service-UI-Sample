@@ -7,44 +7,52 @@
 
 namespace UIEvents
 {
-namespace Model
+namespace Player
+{
+inline const FName HPChanged = TEXT("Player.HPChanged");
+}
+}
+
+namespace UIEvents
 {
 namespace Player
 {
-inline const FName HPChanged = TEXT("Model.Player.HPChanged");
+namespace HUD
+{
+inline const FName ConnectRequested = TEXT("Player.HUD.ConnectRequested");
 }
 }
 }
 
 namespace UIEvents
 {
-namespace View
+namespace Player
 {
 namespace HUD
 {
-inline const FName Constructed = TEXT("View.HUD.Constructed");
+inline const FName Constructed = TEXT("Player.HUD.Constructed");
 }
 }
 }
 
 namespace UIEvents
 {
-namespace View
+namespace Player
 {
 namespace HUD
 {
-inline const FName DamageButtonClicked = TEXT("View.HUD.DamageButtonClicked");
+inline const FName DamageButtonClicked = TEXT("Player.HUD.DamageButtonClicked");
 }
 }
 }
 
 namespace UIEvents
 {
-namespace View
+namespace Player
 {
 namespace HUD
 {
-inline const FName HealButtonClicked = TEXT("View.HUD.HealButtonClicked");
+inline const FName HealButtonClicked = TEXT("Player.HUD.HealButtonClicked");
 }
 }
 }

@@ -17,20 +17,27 @@ void UDefaultView::SendViewEvent(FName EventId)
         return;
     }
 
-    const FName NormalizedEventId = NormalizeViewEventId(EventId);
-    if (NormalizedEventId.IsNone())
+    if (!IsViewEventId(EventId))
     {
+        UE_LOG(
+            LogTemp,
+            Warning,
+            TEXT("UDefaultView '%s' blocked invalid view event '%s'. Use a full event id starting with '%s.'."),
+            *GetName(),
+            *EventId.ToString(),
+            *ViewId.ToString()
+        );
         return;
     }
 
-    if (!IsDeclaredViewEvent(NormalizedEventId))
+    if (!IsDeclaredViewEvent(EventId))
     {
         UE_LOG(
             LogTemp,
             Warning,
             TEXT("UDefaultView '%s' blocked undeclared event '%s'. Add it to DeclaredViewEvents first."),
             *GetName(),
-            *NormalizedEventId.ToString()
+            *EventId.ToString()
         );
         return;
     }
@@ -38,8 +45,7 @@ void UDefaultView::SendViewEvent(FName EventId)
     if (UUIMessageSubsystem* Messages =
         GEngine->GetEngineSubsystem<UUIMessageSubsystem>())
     {
-        Messages->RegisterObject(DefaultViewPresentationIds::View, this);
-        Messages->Send(NormalizedEventId, this);
+        Messages->Send(EventId, this);
     }
 }
 
@@ -51,34 +57,22 @@ FName UDefaultView::MakeViewEventId(FName EventName) const
     }
 
     return FName(*FString::Printf(
-        TEXT("View.%s.%s"),
+        TEXT("%s.%s"),
         *ViewId.ToString(),
         *EventName.ToString()
     ));
 }
 
-FName UDefaultView::NormalizeViewEventId(FName EventId) const
+bool UDefaultView::IsViewEventId(FName EventId) const
 {
-    if (EventId.IsNone())
+    if (ViewId.IsNone() || EventId.IsNone())
     {
-        return NAME_None;
+        return false;
     }
 
     const FString EventIdString = EventId.ToString();
-    if (EventIdString.StartsWith(TEXT("View.")))
-    {
-        return EventId;
-    }
-
-    FString Prefix;
-    FString Remainder;
-    if (EventIdString.Split(TEXT("."), &Prefix, &Remainder) &&
-        Prefix == ViewId.ToString())
-    {
-        return MakeViewEventId(FName(*Remainder));
-    }
-
-    return MakeViewEventId(EventId);
+    const FString ViewPrefix = FString::Printf(TEXT("%s."), *ViewId.ToString());
+    return EventIdString.StartsWith(ViewPrefix);
 }
 
 bool UDefaultView::IsDeclaredViewEvent(FName EventId) const
@@ -88,9 +82,9 @@ bool UDefaultView::IsDeclaredViewEvent(FName EventId) const
         return true;
     }
 
-    for (const FName& EventName : DeclaredViewEvents)
+    for (const FName& DeclaredEventId : DeclaredViewEvents)
     {
-        if (EventId == NormalizeViewEventId(EventName))
+        if (EventId == DeclaredEventId)
         {
             return true;
         }

@@ -14,18 +14,18 @@ void UUIMessageSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 void UUIMessageSubsystem::Deinitialize()
 {
     MessageHandlers.Reset();
-    ObjectRegistry.Reset();
 
     UE_LOG(LogTemp, Log, TEXT("UIMessageSubsystem deinitialized."));
 
     Super::Deinitialize();
 }
 
-void UUIMessageSubsystem::Send(FName EventId, UObject* Source)
+void UUIMessageSubsystem::Send(FName EventId, UObject* Source, UObject* Target)
 {
     FUIMessage Message;
     Message.EventId = EventId;
     Message.Source = Source;
+    Message.Target = Target;
 
     Send(Message);
 }
@@ -53,18 +53,7 @@ void UUIMessageSubsystem::Send(const FUIMessage& Message)
     }
 }
 
-void UUIMessageSubsystem::SendUIMessage(FName EventId, UObject* Source)
+void UUIMessageSubsystem::SendUIMessage(FName EventId, UObject* Source, UObject* Target)
 {
-    Send(EventId, Source);
-}
-
-void UUIMessageSubsystem::RegisterObject(FName ObjectId, UObject* Object)
-{
-    if (!Object)
-    {
-        ObjectRegistry.Remove(ObjectId);
-        return;
-    }
-
-    ObjectRegistry.Add(ObjectId, Object);
+    Send(EventId, Source, Target);
 }

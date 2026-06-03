@@ -17,18 +17,6 @@
 
 namespace
 {
-    FString ResolveKind(const FString& EventId)
-    {
-        FString Kind;
-        FString Remainder;
-        if (EventId.Split(TEXT("."), &Kind, &Remainder))
-        {
-            return Kind;
-        }
-
-        return TEXT("Unknown");
-    }
-
     TSharedRef<FJsonObject> MakeEventObject(
         const FString& EventId,
         const FString& Name,
@@ -39,7 +27,6 @@ namespace
     {
         TSharedRef<FJsonObject> EventObject = MakeShared<FJsonObject>();
         EventObject->SetStringField(TEXT("id"), EventId);
-        EventObject->SetStringField(TEXT("kind"), ResolveKind(EventId));
         EventObject->SetStringField(TEXT("name"), Name);
         EventObject->SetStringField(TEXT("owner"), Owner);
         EventObject->SetStringField(TEXT("source"), Source);
@@ -192,7 +179,7 @@ namespace
     FString MakeViewEventId(FName ViewId, FName EventName)
     {
         return FString::Printf(
-            TEXT("View.%s.%s"),
+            TEXT("%s.%s"),
             *ViewId.ToString(),
             *EventName.ToString()
         );
@@ -416,9 +403,7 @@ namespace
 
         const FString MacroNames[] =
         {
-            TEXT("UI_EVENT"),
-            TEXT("UI_MODEL_EVENT"),
-            TEXT("UI_VIEW_EVENT")
+            TEXT("PRISMUI_EVENT_DECLARE")
         };
 
         for (const FString& SourceFile : SourceFiles)
@@ -458,60 +443,29 @@ namespace
         return true;
     }
 
-    FName NormalizeViewEventName(FName ViewId, const FString& RawEventId)
-    {
-        FString EventId = RawEventId;
-        EventId.TrimStartAndEndInline();
-
-        if (EventId.IsEmpty() || EventId == TEXT("None"))
-        {
-            return NAME_None;
-        }
-
-        const FString ViewPrefix = FString::Printf(TEXT("View.%s."), *ViewId.ToString());
-        if (EventId.StartsWith(ViewPrefix))
-        {
-            return FName(*EventId.RightChop(ViewPrefix.Len()));
-        }
-
-        const FString LegacyPrefix = FString::Printf(TEXT("%s."), *ViewId.ToString());
-        if (EventId.StartsWith(LegacyPrefix))
-        {
-            return FName(*EventId.RightChop(LegacyPrefix.Len()));
-        }
-
-        if (!EventId.Contains(TEXT(".")))
-        {
-            return FName(*EventId);
-        }
-
-        return NAME_None;
-    }
-
     bool IsDeclaredViewEvent(
         FName ViewId,
-        FName EventName,
-        const TSet<FName>& DeclaredEventNames
+        FName EventId,
+        const TSet<FName>& DeclaredEventIds
     )
     {
-        if (EventName.IsNone())
+        if (EventId.IsNone())
         {
             return false;
         }
 
-        if (MakeViewEventId(ViewId, EventName) ==
-            MakeViewEventId(ViewId, FName(TEXT("Constructed"))))
+        if (EventId == FName(*MakeViewEventId(ViewId, FName(TEXT("Constructed")))))
         {
             return true;
         }
 
-        return DeclaredEventNames.Contains(EventName);
+        return DeclaredEventIds.Contains(EventId);
     }
 
     bool ValidateGraphViewEvents(
         const UBlueprint& Blueprint,
         FName ViewId,
-        const TSet<FName>& DeclaredEventNames,
+        const TSet<FName>& DeclaredEventIds,
         FString& OutError
     )
     {
@@ -557,15 +511,16 @@ namespace
                     continue;
                 }
 
-                const FName EventName =
-                    NormalizeViewEventName(ViewId, EventIdPin->DefaultValue);
-                if (!IsDeclaredViewEvent(ViewId, EventName, DeclaredEventNames))
+                FString EventIdString = EventIdPin->DefaultValue;
+                EventIdString.TrimStartAndEndInline();
+                const FName EventId(*EventIdString);
+                if (!IsDeclaredViewEvent(ViewId, EventId, DeclaredEventIds))
                 {
                     OutError = FString::Printf(
                         TEXT("%s sends undeclared view event '%s'. Add '%s' to DeclaredViewEvents first."),
                         *Blueprint.GetPathName(),
                         *EventIdPin->DefaultValue,
-                        *EventName.ToString()
+                        *EventIdString
                     );
                     return false;
                 }
@@ -623,23 +578,39 @@ int32 URefreshUIEventContractsCommandlet::Main(const FString& Params)
         const FName ViewIdName = DefaultView->GetViewId();
         const FString ViewId = ViewIdName.ToString();
         const FString Owner = AssetData.PackageName.ToString();
-        TSet<FName> ViewEventNames;
+        TSet<FName> ViewEventIds;
+        const FString ViewPrefix = FString::Printf(TEXT("%s."), *ViewId);
 
-        for (const FName& EventName : DefaultView->GetDeclaredViewEvents())
+        for (const FName& DeclaredEventId : DefaultView->GetDeclaredViewEvents())
         {
-            const FName NormalizedEventName =
-                NormalizeViewEventName(ViewIdName, EventName.ToString());
-            if (!NormalizedEventName.IsNone())
+            FString EventId = DeclaredEventId.ToString();
+            EventId.TrimStartAndEndInline();
+            if (EventId.IsEmpty() || EventId == TEXT("None"))
             {
-                ViewEventNames.Add(NormalizedEventName);
+                continue;
             }
+
+            if (!IsValidEventId(EventId) || !EventId.StartsWith(ViewPrefix))
+            {
+                UE_LOG(
+                    LogTemp,
+                    Error,
+                    TEXT("%s declares invalid view event '%s'. Use a full event id starting with '%s'."),
+                    *Blueprint->GetPathName(),
+                    *DeclaredEventId.ToString(),
+                    *ViewPrefix
+                );
+                return 1;
+            }
+
+            ViewEventIds.Add(FName(*EventId));
         }
 
         FString ValidationError;
         if (!ValidateGraphViewEvents(
             *Blueprint,
             ViewIdName,
-            ViewEventNames,
+            ViewEventIds,
             ValidationError
         ))
         {
@@ -664,18 +635,19 @@ int32 URefreshUIEventContractsCommandlet::Main(const FString& Params)
             return 1;
         }
 
-        for (const FName& EventName : ViewEventNames)
+        for (const FName& EventId : ViewEventIds)
         {
-            if (EventName.IsNone())
+            if (EventId.IsNone())
             {
                 continue;
             }
 
+            const FString EventIdString = EventId.ToString();
             if (!AddEvent(
                 EventsById,
                 MakeEventObject(
-                    MakeViewEventId(ViewIdName, EventName),
-                    EventName.ToString(),
+                    EventIdString,
+                    MakeEventName(EventIdString),
                     Owner,
                     TEXT("WBP"),
                     ViewId

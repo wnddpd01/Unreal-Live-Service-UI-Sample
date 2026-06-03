@@ -46,6 +46,6 @@ void UMockPlayerModel::BroadcastHPChanged()
     if (UUIMessageSubsystem* Messages =
         GEngine->GetEngineSubsystem<UUIMessageSubsystem>())
     {
-        Messages->Send(UIEvents::Model::Player::HPChanged, this);
+        Messages->Send(UIEvents::Player::HPChanged, this);
     }
 }

@@ -1,11 +1,15 @@
 #include "SamplePlayerController.h"
 
 #include "DefaultView.h"
+#include "GeneratedUIEventIds.h"
 #include "MockPlayerModel.h"
 #include "UIMessageSubsystem.h"
+#include "UIEventDeclarationMacros.h"
 #include "Blueprint/UserWidget.h"
 #include "Engine/Engine.h"
 #include "HUDPresenter.h"
+
+PRISMUI_EVENT_DECLARE(Player.HUD.ConnectRequested)
 
 void ASamplePlayerController::BeginPlay()
 {
@@ -16,15 +20,6 @@ void ASamplePlayerController::BeginPlay()
     {
         UE_LOG(LogTemp, Warning, TEXT("Failed to create PlayerModel."));
         return;
-    }
-
-    if (GEngine)
-    {
-        if (UUIMessageSubsystem* Messages =
-            GEngine->GetEngineSubsystem<UUIMessageSubsystem>())
-        {
-            Messages->RegisterObject(HUDPresentationIds::PlayerModel, PlayerModel);
-        }
     }
 
     if (!HUDWidgetClass)
@@ -38,6 +33,19 @@ void ASamplePlayerController::BeginPlay()
     {
         UE_LOG(LogTemp, Warning, TEXT("Failed to create HUDWidgetInstance."));
         return;
+    }
+
+    if (GEngine)
+    {
+        if (UUIMessageSubsystem* Messages =
+            GEngine->GetEngineSubsystem<UUIMessageSubsystem>())
+        {
+            Messages->Send(
+                UIEvents::Player::HUD::ConnectRequested,
+                PlayerModel,
+                HUDWidgetInstance
+            );
+        }
     }
 
     HUDWidgetInstance->AddToViewport();
