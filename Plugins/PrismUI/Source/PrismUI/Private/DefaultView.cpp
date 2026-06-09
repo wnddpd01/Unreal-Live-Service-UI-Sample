@@ -1,6 +1,6 @@
 #include "DefaultView.h"
 
-#include "UIMessageSubsystem.h"
+#include "PrismUISubsystem.h"
 #include "Engine/Engine.h"
 
 void UDefaultView::NativeConstruct()
@@ -42,8 +42,8 @@ void UDefaultView::SendViewEvent(FName EventId)
         return;
     }
 
-    if (UUIMessageSubsystem* Messages =
-        GEngine->GetEngineSubsystem<UUIMessageSubsystem>())
+    if (UPrismUISubsystem* Messages =
+        GEngine->GetEngineSubsystem<UPrismUISubsystem>())
     {
         Messages->Send(EventId, this);
     }

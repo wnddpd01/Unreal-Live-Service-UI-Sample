@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 
-class UUIMessageSubsystem;
+class UPrismUISubsystem;
 struct FUIMessage;
 class UMockPlayerModel;
 class UDefaultView;
@@ -10,7 +10,7 @@ class UDefaultView;
 class UISAMPLE_API FHUDPresenter
 {
 public:
-    static void Install(UUIMessageSubsystem& Messages);
+    static void Install(UPrismUISubsystem& Messages);
 
 private:
     static void Connect(const FUIMessage& Message);

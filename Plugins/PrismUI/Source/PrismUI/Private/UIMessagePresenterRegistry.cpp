@@ -1,7 +1,7 @@
 #include "UIMessagePresenterRegistry.h"
 
 #include "Engine/Engine.h"
-#include "UIMessageSubsystem.h"
+#include "PrismUISubsystem.h"
 
 namespace
 {
@@ -45,8 +45,8 @@ void UIMessagePresenterRegistry::Register(
 
     if (GEngine)
     {
-        if (UUIMessageSubsystem* Messages =
-            GEngine->GetEngineSubsystem<UUIMessageSubsystem>())
+        if (UPrismUISubsystem* Messages =
+            GEngine->GetEngineSubsystem<UPrismUISubsystem>())
         {
             InstallFunction(*Messages);
         }
@@ -68,7 +68,7 @@ void UIMessagePresenterRegistry::Unregister(FName PresenterId)
     );
 }
 
-void UIMessagePresenterRegistry::InstallAll(UUIMessageSubsystem& Messages)
+void UIMessagePresenterRegistry::InstallAll(UPrismUISubsystem& Messages)
 {
     const TArray<FRegisteredUIMessagePresenter> Presenters = GetRegisteredPresenters();
     for (const FRegisteredUIMessagePresenter& Presenter : Presenters)

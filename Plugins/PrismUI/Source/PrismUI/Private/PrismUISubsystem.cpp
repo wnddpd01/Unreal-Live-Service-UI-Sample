@@ -1,8 +1,8 @@
-#include "UIMessageSubsystem.h"
+#include "PrismUISubsystem.h"
 
 #include "UIMessagePresenterRegistry.h"
 
-void UUIMessageSubsystem::Initialize(FSubsystemCollectionBase& Collection)
+void UPrismUISubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
     Super::Initialize(Collection);
 
@@ -11,7 +11,7 @@ void UUIMessageSubsystem::Initialize(FSubsystemCollectionBase& Collection)
     UE_LOG(LogTemp, Log, TEXT("UIMessageSubsystem initialized."));
 }
 
-void UUIMessageSubsystem::Deinitialize()
+void UPrismUISubsystem::Deinitialize()
 {
     MessageHandlers.Reset();
 
@@ -20,7 +20,7 @@ void UUIMessageSubsystem::Deinitialize()
     Super::Deinitialize();
 }
 
-void UUIMessageSubsystem::Send(FName EventId, UObject* Source, UObject* Target)
+void UPrismUISubsystem::Send(FName EventId, UObject* Source, UObject* Target)
 {
     FUIMessage Message;
     Message.EventId = EventId;
@@ -30,7 +30,7 @@ void UUIMessageSubsystem::Send(FName EventId, UObject* Source, UObject* Target)
     Send(Message);
 }
 
-void UUIMessageSubsystem::Send(const FUIMessage& Message)
+void UPrismUISubsystem::Send(const FUIMessage& Message)
 {
     if (Message.EventId.IsNone())
     {
@@ -53,7 +53,7 @@ void UUIMessageSubsystem::Send(const FUIMessage& Message)
     }
 }
 
-void UUIMessageSubsystem::SendUIMessage(FName EventId, UObject* Source, UObject* Target)
+void UPrismUISubsystem::SendUIMessage(FName EventId, UObject* Source, UObject* Target)
 {
     Send(EventId, Source, Target);
 }

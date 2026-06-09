@@ -4,7 +4,7 @@
 #include "MockPlayerModel.h"
 #include "GeneratedUIEventIds.h"
 #include "UIMessagePresenterRegistry.h"
-#include "UIMessageSubsystem.h"
+#include "PrismUISubsystem.h"
 #include "Blueprint/WidgetTree.h"
 #include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
@@ -26,9 +26,9 @@ namespace
     }
 }
 
-void FHUDPresenter::Install(UUIMessageSubsystem& Messages)
+void FHUDPresenter::Install(UPrismUISubsystem& Messages)
 {
-    static TWeakObjectPtr<UUIMessageSubsystem> InstalledMessages;
+    static TWeakObjectPtr<UPrismUISubsystem> InstalledMessages;
     if (InstalledMessages.Get() == &Messages)
     {
         return;

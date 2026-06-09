@@ -2,9 +2,9 @@
 
 #include "CoreMinimal.h"
 
-class UUIMessageSubsystem;
+class UPrismUISubsystem;
 
-using FUIMessagePresenterInstallFunction = void (*)(UUIMessageSubsystem& Messages);
+using FUIMessagePresenterInstallFunction = void (*)(UPrismUISubsystem& Messages);
 
 namespace UIMessagePresenterRegistry
 {
@@ -13,7 +13,7 @@ namespace UIMessagePresenterRegistry
         FUIMessagePresenterInstallFunction InstallFunction
     );
     PRISMUI_API void Unregister(FName PresenterId);
-    PRISMUI_API void InstallAll(UUIMessageSubsystem& Messages);
+    PRISMUI_API void InstallAll(UPrismUISubsystem& Messages);
 }
 
 class PRISMUI_API FAutoUIMessagePresenterRegistration

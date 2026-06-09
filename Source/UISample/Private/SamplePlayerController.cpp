@@ -3,7 +3,7 @@
 #include "DefaultView.h"
 #include "GeneratedUIEventIds.h"
 #include "MockPlayerModel.h"
-#include "UIMessageSubsystem.h"
+#include "PrismUISubsystem.h"
 #include "UIEventDeclarationMacros.h"
 #include "Blueprint/UserWidget.h"
 #include "Engine/Engine.h"
@@ -37,8 +37,8 @@ void ASamplePlayerController::BeginPlay()
 
     if (GEngine)
     {
-        if (UUIMessageSubsystem* Messages =
-            GEngine->GetEngineSubsystem<UUIMessageSubsystem>())
+        if (UPrismUISubsystem* Messages =
+            GEngine->GetEngineSubsystem<UPrismUISubsystem>())
         {
             Messages->Send(
                 UIEvents::Player::HUD::ConnectRequested,

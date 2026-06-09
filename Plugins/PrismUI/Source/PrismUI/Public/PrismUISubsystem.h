@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Subsystems/EngineSubsystem.h"
-#include "UIMessageSubsystem.generated.h"
+#include "PrismUISubsystem.generated.h"
 
 USTRUCT(BlueprintType)
 struct PRISMUI_API FUIMessage
@@ -28,7 +28,7 @@ struct PRISMUI_API FUIMessage
 };
 
 UCLASS()
-class PRISMUI_API UUIMessageSubsystem : public UEngineSubsystem
+class PRISMUI_API UPrismUISubsystem : public UEngineSubsystem
 {
     GENERATED_BODY()
 
