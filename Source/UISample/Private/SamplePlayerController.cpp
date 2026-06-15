@@ -9,8 +9,6 @@
 #include "Engine/Engine.h"
 #include "HUDPresenter.h"
 
-PRISMUI_EVENT_DECLARE(Player.HUD.ConnectRequested)
-
 void ASamplePlayerController::BeginPlay()
 {
     Super::BeginPlay();
@@ -40,11 +38,12 @@ void ASamplePlayerController::BeginPlay()
         if (UPrismUISubsystem* Messages =
             GEngine->GetEngineSubsystem<UPrismUISubsystem>())
         {
-            Messages->Send(
-                UIEvents::Player::HUD::ConnectRequested,
-                PlayerModel,
-                HUDWidgetInstance
-            );
+            FPrismUIBindRequest BindRequest;
+			BindRequest.BindingId = FHUDPresenter::PresenterId();
+            BindRequest.Model = PlayerModel;
+            BindRequest.View = HUDWidgetInstance;
+
+            Messages->Bind(BindRequest);
         }
     }
 

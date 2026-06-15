@@ -39,5 +39,5 @@ private:
         FAutoUIMessagePresenterRegistration PRISMUI_PRIVATE_JOIN( \
             GAutoUIMessagePresenterRegistration_, \
             __LINE__ \
-        )(TEXT(#PresenterType), &PresenterType::Install); \
+        )(PresenterType::PresenterId(), &PresenterType::Install); \
     }

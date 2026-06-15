@@ -8,12 +8,6 @@
 			"source": "C++"
 		},
 		{
-			"id": "Player.HUD.ConnectRequested",
-			"name": "ConnectRequested",
-			"owner": "Source/UISample/Private/SamplePlayerController.cpp",
-			"source": "C++"
-		},
-		{
 			"id": "Player.HUD.Constructed",
 			"name": "Constructed",
 			"owner": "/Game/UI/BP_SampleHUDWidget",

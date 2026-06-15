@@ -19,17 +19,6 @@ namespace Player
 {
 namespace HUD
 {
-inline const FName ConnectRequested = TEXT("Player.HUD.ConnectRequested");
-}
-}
-}
-
-namespace UIEvents
-{
-namespace Player
-{
-namespace HUD
-{
 inline const FName Constructed = TEXT("Player.HUD.Constructed");
 }
 }

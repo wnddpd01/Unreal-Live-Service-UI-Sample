@@ -11,19 +11,15 @@
 
 PRISMUI_REGISTER_MESSAGE_PRESENTER(FHUDPresenter)
 
-namespace
+const TSharedPtr< FPrismUIBindState > GetHUDBinding()
 {
-    struct FHUDBinding
+    TSharedPtr< FPrismUIBindState > pBindState = nullptr;
+    if (UPrismUISubsystem* Messages =
+        GEngine->GetEngineSubsystem<UPrismUISubsystem>())
     {
-        TWeakObjectPtr<UMockPlayerModel> Model;
-        TWeakObjectPtr<UDefaultView> View;
-    };
-
-    FHUDBinding& GetHUDBinding()
-    {
-        static FHUDBinding Binding;
-        return Binding;
+        pBindState = Messages->GetBindState(FHUDPresenter::PresenterId());
     }
+	return pBindState;
 }
 
 void FHUDPresenter::Install(UPrismUISubsystem& Messages)
@@ -35,11 +31,6 @@ void FHUDPresenter::Install(UPrismUISubsystem& Messages)
     }
 
     InstalledMessages = &Messages;
-
-    Messages.Subscribe(UIEvents::Player::HUD::ConnectRequested, [](const FUIMessage& Message)
-        {
-            FHUDPresenter::Connect(Message);
-        });
 
     Messages.Subscribe(UIEvents::Player::HPChanged, [](const FUIMessage& Message)
         {
@@ -69,38 +60,21 @@ void FHUDPresenter::Install(UPrismUISubsystem& Messages)
         });
 }
 
-void FHUDPresenter::Connect(const FUIMessage& Message)
-{
-    UMockPlayerModel* Model = Cast<UMockPlayerModel>(Message.GetSource());
-    UDefaultView* View = Cast<UDefaultView>(Message.GetTarget());
-
-    if (!Model || !View)
-    {
-        return;
-    }
-
-    FHUDBinding& Binding = GetHUDBinding();
-    Binding.Model = Model;
-    Binding.View = View;
-
-    UpdateHPView(*View, *Model);
-}
-
 void FHUDPresenter::RefreshHP(const UMockPlayerModel& Model)
 {
-    FHUDBinding& Binding = GetHUDBinding();
-    if (Binding.Model.IsValid() && Binding.Model.Get() != &Model)
+    const TSharedPtr< FPrismUIBindState > pBindState = GetHUDBinding();
+    if (pBindState == nullptr || pBindState->Model.IsValid() && pBindState->Model.Get() != &Model)
     {
         return;
     }
 
-    UDefaultView* View = Binding.View.Get();
+    UDefaultView* View = Cast<UDefaultView>(pBindState->View.Get());
     if (!View)
     {
         return;
     }
 
-    UpdateHPView(*View, Model);
+    UpdateHPView( *View, Model);
 }
 
 void FHUDPresenter::UpdateHPView(
@@ -140,7 +114,11 @@ void FHUDPresenter::UpdateHPView(
 
 void FHUDPresenter::RequestDamage()
 {
-    UMockPlayerModel* Model = GetHUDBinding().Model.Get();
+    const TSharedPtr< FPrismUIBindState > pBindState = GetHUDBinding();
+    if (!pBindState)
+        return;
+
+    UMockPlayerModel* Model = Cast< UMockPlayerModel >(pBindState->Model.Get());
     if (!Model)
     {
         return;
@@ -151,7 +129,11 @@ void FHUDPresenter::RequestDamage()
 
 void FHUDPresenter::RequestHeal()
 {
-    UMockPlayerModel* Model = GetHUDBinding().Model.Get();
+    const TSharedPtr< FPrismUIBindState > pBindState = GetHUDBinding();
+    if (!pBindState)
+        return;
+
+    UMockPlayerModel* Model = Cast< UMockPlayerModel >(pBindState->Model.Get());
     if (!Model)
     {
         return;
@@ -162,14 +144,17 @@ void FHUDPresenter::RequestHeal()
 
 void FHUDPresenter::RefreshView(const FUIMessage& Message)
 {
-    FHUDBinding& Binding = GetHUDBinding();
+    const TSharedPtr< FPrismUIBindState > pBindState = GetHUDBinding();
+    if (!pBindState)
+        return;
+
     UDefaultView* View = Cast<UDefaultView>(Message.GetSource());
-    if (Binding.View.IsValid() && Binding.View.Get() != View)
+    if (pBindState->View.IsValid() && pBindState->View.Get() != View)
     {
         return;
     }
 
-    UMockPlayerModel* Model = Binding.Model.Get();
+    UMockPlayerModel* Model = Cast< UMockPlayerModel >(pBindState->Model.Get());
     if (!Model)
     {
         return;

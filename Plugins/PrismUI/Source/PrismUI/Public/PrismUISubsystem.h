@@ -27,6 +27,28 @@ struct PRISMUI_API FUIMessage
     }
 };
 
+USTRUCT(BlueprintType)
+struct FPrismUIBindRequest
+{
+    GENERATED_BODY()
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FName BindingId;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    TObjectPtr<UObject> Model = nullptr;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    TObjectPtr<UObject> View = nullptr;
+};
+
+struct FPrismUIBindState
+{
+    FName BindingId;
+    TWeakObjectPtr<UObject> Model;
+    TWeakObjectPtr<UObject> View;
+};
+
 UCLASS()
 class PRISMUI_API UPrismUISubsystem : public UEngineSubsystem
 {
@@ -50,6 +72,18 @@ public:
     UFUNCTION(BlueprintCallable, Category = "UI|Messages")
     void SendUIMessage(FName EventId, UObject* Source = nullptr, UObject* Target = nullptr);
 
+    void Bind(const FPrismUIBindRequest& bindingRequest);
+
+	const TSharedPtr<FPrismUIBindState> GetBindState(FName BindingId) const
+	{
+		if (const TSharedPtr<FPrismUIBindState>* FoundState = UIBindStates.Find(BindingId))
+		{
+			return *FoundState;
+		}
+		return nullptr;
+	}
+
 private:
     TMap<FName, TArray<TFunction<void(const FUIMessage&)>>> MessageHandlers;
+	TMap<FName, TSharedPtr< FPrismUIBindState > > UIBindStates;
 };

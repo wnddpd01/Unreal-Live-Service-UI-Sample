@@ -57,3 +57,19 @@ void UPrismUISubsystem::SendUIMessage(FName EventId, UObject* Source, UObject* T
 {
     Send(EventId, Source, Target);
 }
+
+void UPrismUISubsystem::Bind(const FPrismUIBindRequest& bindingRequest)
+{
+    if (bindingRequest.BindingId.IsNone())
+    {
+        UE_LOG(LogTemp, Warning, TEXT("PrismUI ignored bind request without BindingId."));
+        return;
+    }
+
+    TSharedPtr< FPrismUIBindState > pBindState = MakeShared< FPrismUIBindState >();
+    pBindState->BindingId = bindingRequest.BindingId;
+    pBindState->Model = bindingRequest.Model;
+    pBindState->View = bindingRequest.View;
+
+    UIBindStates.Add(pBindState->BindingId, pBindState);
+}
