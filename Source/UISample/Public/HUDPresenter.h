@@ -1,7 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "PrismUIPresenterId.h"
+#include "PrismUIPresenterName.h"
 
 class UPrismUISubsystem;
 struct FUIMessage;
@@ -10,7 +10,7 @@ class UDefaultView;
 
 class UISAMPLE_API FHUDPresenter
 {
-    PRISMUI_PRESENTER_ID(FHUDPresenter);
+    PRISMUI_PRESENTER(FHUDPresenter);
 
 public:
     static void Install(UPrismUISubsystem& Messages);

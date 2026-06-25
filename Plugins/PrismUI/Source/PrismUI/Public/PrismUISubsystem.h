@@ -36,6 +36,9 @@ struct FPrismUIBindRequest
     FName BindingId;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FName PresenterName;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TObjectPtr<UObject> Model = nullptr;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -45,6 +48,7 @@ struct FPrismUIBindRequest
 struct FPrismUIBindState
 {
     FName BindingId;
+    FName PresenterName;
     TWeakObjectPtr<UObject> Model;
     TWeakObjectPtr<UObject> View;
 };

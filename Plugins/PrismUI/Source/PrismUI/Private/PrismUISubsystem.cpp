@@ -14,6 +14,7 @@ void UPrismUISubsystem::Initialize(FSubsystemCollectionBase& Collection)
 void UPrismUISubsystem::Deinitialize()
 {
     MessageHandlers.Reset();
+    UIBindStates.Reset();
 
     UE_LOG(LogTemp, Log, TEXT("UIMessageSubsystem deinitialized."));
 
@@ -60,14 +61,15 @@ void UPrismUISubsystem::SendUIMessage(FName EventId, UObject* Source, UObject* T
 
 void UPrismUISubsystem::Bind(const FPrismUIBindRequest& bindingRequest)
 {
-    if (bindingRequest.BindingId.IsNone())
+    if (bindingRequest.PresenterName.IsNone())
     {
-        UE_LOG(LogTemp, Warning, TEXT("PrismUI ignored bind request without BindingId."));
+        UE_LOG(LogTemp, Warning, TEXT("PrismUI ignored bind request without PresenterName."));
         return;
     }
 
     TSharedPtr< FPrismUIBindState > pBindState = MakeShared< FPrismUIBindState >();
-    pBindState->BindingId = bindingRequest.BindingId;
+    pBindState->BindingId = bindingRequest.BindingId.IsNone() ? bindingRequest.PresenterName : bindingRequest.BindingId;
+    pBindState->PresenterName = bindingRequest.PresenterName;
     pBindState->Model = bindingRequest.Model;
     pBindState->View = bindingRequest.View;
 

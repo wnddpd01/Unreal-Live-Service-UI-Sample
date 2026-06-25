@@ -9,10 +9,10 @@ using FUIMessagePresenterInstallFunction = void (*)(UPrismUISubsystem& Messages)
 namespace UIMessagePresenterRegistry
 {
     PRISMUI_API void Register(
-        FName PresenterId,
+        FName PresenterName,
         FUIMessagePresenterInstallFunction InstallFunction
     );
-    PRISMUI_API void Unregister(FName PresenterId);
+    PRISMUI_API void Unregister(FName PresenterName);
     PRISMUI_API void InstallAll(UPrismUISubsystem& Messages);
 }
 
@@ -20,14 +20,14 @@ class PRISMUI_API FAutoUIMessagePresenterRegistration
 {
 public:
     FAutoUIMessagePresenterRegistration(
-        FName InPresenterId,
+        FName InPresenterName,
         FUIMessagePresenterInstallFunction InInstallFunction
     );
 
     ~FAutoUIMessagePresenterRegistration();
 
 private:
-    FName PresenterId;
+    FName PresenterName;
 };
 
 #define PRISMUI_PRIVATE_JOIN_INNER(A, B) A##B
@@ -39,5 +39,5 @@ private:
         FAutoUIMessagePresenterRegistration PRISMUI_PRIVATE_JOIN( \
             GAutoUIMessagePresenterRegistration_, \
             __LINE__ \
-        )(PresenterType::PresenterId(), &PresenterType::Install); \
+        )(PresenterType::PresenterName(), &PresenterType::Install); \
     }

@@ -39,7 +39,7 @@ void ASamplePlayerController::BeginPlay()
             GEngine->GetEngineSubsystem<UPrismUISubsystem>())
         {
             FPrismUIBindRequest BindRequest;
-			BindRequest.BindingId = FHUDPresenter::PresenterId();
+			BindRequest.PresenterName = FHUDPresenter::PresenterName();
             BindRequest.Model = PlayerModel;
             BindRequest.View = HUDWidgetInstance;
 

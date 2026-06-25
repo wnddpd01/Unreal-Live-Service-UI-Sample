@@ -17,7 +17,7 @@ const TSharedPtr< FPrismUIBindState > GetHUDBinding()
     if (UPrismUISubsystem* Messages =
         GEngine->GetEngineSubsystem<UPrismUISubsystem>())
     {
-        pBindState = Messages->GetBindState(FHUDPresenter::PresenterId());
+        pBindState = Messages->GetBindState(FHUDPresenter::PresenterName());
     }
 	return pBindState;
 }

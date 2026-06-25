@@ -7,7 +7,7 @@ namespace
 {
     struct FRegisteredUIMessagePresenter
     {
-        FName PresenterId;
+        FName PresenterName;
         FUIMessagePresenterInstallFunction InstallFunction = nullptr;
     };
 
@@ -20,27 +20,27 @@ namespace
 }
 
 void UIMessagePresenterRegistry::Register(
-    FName PresenterId,
+    FName PresenterName,
     FUIMessagePresenterInstallFunction InstallFunction
 )
 {
-    if (PresenterId.IsNone() || !InstallFunction)
+    if (PresenterName.IsNone() || !InstallFunction)
     {
         return;
     }
 
     TArray<FRegisteredUIMessagePresenter>& Presenters = GetRegisteredPresenters();
     if (FRegisteredUIMessagePresenter* ExistingPresenter =
-        Presenters.FindByPredicate([PresenterId](const FRegisteredUIMessagePresenter& Presenter)
+        Presenters.FindByPredicate([PresenterName](const FRegisteredUIMessagePresenter& Presenter)
             {
-                return Presenter.PresenterId == PresenterId;
+                return Presenter.PresenterName == PresenterName;
             }))
     {
         ExistingPresenter->InstallFunction = InstallFunction;
     }
     else
     {
-        Presenters.Add({ PresenterId, InstallFunction });
+        Presenters.Add({ PresenterName, InstallFunction });
     }
 
     if (GEngine)
@@ -53,17 +53,17 @@ void UIMessagePresenterRegistry::Register(
     }
 }
 
-void UIMessagePresenterRegistry::Unregister(FName PresenterId)
+void UIMessagePresenterRegistry::Unregister(FName PresenterName)
 {
-    if (PresenterId.IsNone())
+    if (PresenterName.IsNone())
     {
         return;
     }
 
     GetRegisteredPresenters().RemoveAll(
-        [PresenterId](const FRegisteredUIMessagePresenter& Presenter)
+        [PresenterName](const FRegisteredUIMessagePresenter& Presenter)
         {
-            return Presenter.PresenterId == PresenterId;
+            return Presenter.PresenterName == PresenterName;
         }
     );
 }
@@ -81,15 +81,15 @@ void UIMessagePresenterRegistry::InstallAll(UPrismUISubsystem& Messages)
 }
 
 FAutoUIMessagePresenterRegistration::FAutoUIMessagePresenterRegistration(
-    FName InPresenterId,
+    FName InPresenterName,
     FUIMessagePresenterInstallFunction InInstallFunction
 )
-    : PresenterId(InPresenterId)
+    : PresenterName(InPresenterName)
 {
-    UIMessagePresenterRegistry::Register(PresenterId, InInstallFunction);
+    UIMessagePresenterRegistry::Register(PresenterName, InInstallFunction);
 }
 
 FAutoUIMessagePresenterRegistration::~FAutoUIMessagePresenterRegistration()
 {
-    UIMessagePresenterRegistry::Unregister(PresenterId);
+    UIMessagePresenterRegistry::Unregister(PresenterName);
 }
