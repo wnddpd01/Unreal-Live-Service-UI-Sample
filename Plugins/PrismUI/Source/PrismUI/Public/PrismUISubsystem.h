@@ -27,6 +27,12 @@ struct PRISMUI_API FUIMessage
     }
 };
 
+struct PRISMUI_API FUIMessageSubscription
+{
+    FName PresenterName;
+    TFunction<void(const FUIMessage&)> Callback;
+};
+
 USTRUCT(BlueprintType)
 struct FPrismUIBindRequest
 {
@@ -64,11 +70,16 @@ public:
 
 public:
     template <typename HandlerType>
-    void Subscribe(FName EventId, HandlerType&& Handler)
+    void Subscribe(FName PresenterName, FName EventId, HandlerType&& Handler)
     {
-        TFunction<void(const FUIMessage&)> WrappedHandler(Forward<HandlerType>(Handler));
-        MessageHandlers.FindOrAdd(EventId).Add(MoveTemp(WrappedHandler));
+        FUIMessageSubscription Subscription;
+        Subscription.PresenterName = PresenterName;
+        Subscription.Callback = TFunction<void(const FUIMessage&)>( Forward<HandlerType>(Handler) );
+        
+        MessageSubscriptions.FindOrAdd(EventId).Add(MoveTemp(Subscription));
     }
+    
+    void ClearPresenterSubscriptions(FName PresenterName);
 
     void Send(FName EventId, UObject* Source = nullptr, UObject* Target = nullptr);
     void Send(const FUIMessage& Message);
@@ -78,16 +89,16 @@ public:
 
     void Bind(const FPrismUIBindRequest& bindingRequest);
 
-	const TSharedPtr<FPrismUIBindState> GetBindState(FName BindingId) const
-	{
-		if (const TSharedPtr<FPrismUIBindState>* FoundState = UIBindStates.Find(BindingId))
-		{
-			return *FoundState;
-		}
-		return nullptr;
-	}
+    const TSharedPtr<FPrismUIBindState> GetBindState(FName BindingId) const
+    {
+        if (const TSharedPtr<FPrismUIBindState>* FoundState = UIBindStates.Find(BindingId))
+        {
+            return *FoundState;
+        }
+        return nullptr;
+    }
 
 private:
-    TMap<FName, TArray<TFunction<void(const FUIMessage&)>>> MessageHandlers;
-	TMap<FName, TSharedPtr< FPrismUIBindState > > UIBindStates;
+    TMap<FName/* Event Id */, TArray<FUIMessageSubscription>> MessageSubscriptions;
+    TMap<FName, TSharedPtr< FPrismUIBindState > > UIBindStates;
 };

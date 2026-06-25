@@ -13,13 +13,32 @@ void UPrismUISubsystem::Initialize(FSubsystemCollectionBase& Collection)
 
 void UPrismUISubsystem::Deinitialize()
 {
-    MessageHandlers.Reset();
+    MessageSubscriptions.Reset();
     UIBindStates.Reset();
 
     UE_LOG(LogTemp, Log, TEXT("UIMessageSubsystem deinitialized."));
 
     Super::Deinitialize();
 }
+
+void UPrismUISubsystem::ClearPresenterSubscriptions(FName PresenterName)
+{
+    for (auto It = MessageSubscriptions.CreateIterator(); It; ++It)
+    {
+        It.Value().RemoveAll(
+            [PresenterName](const FUIMessageSubscription& Subscription)
+            {
+                return Subscription.PresenterName == PresenterName;
+            }
+        );
+
+        if (It.Value().Num() == 0)
+        {
+            It.RemoveCurrent();
+        }
+    }
+}
+
 
 void UPrismUISubsystem::Send(FName EventId, UObject* Source, UObject* Target)
 {
@@ -38,18 +57,17 @@ void UPrismUISubsystem::Send(const FUIMessage& Message)
         return;
     }
 
-    TArray<TFunction<void(const FUIMessage&)>>* Handlers =
-        MessageHandlers.Find(Message.EventId);
-    if (!Handlers)
+    TArray<FUIMessageSubscription>* Subscriptions = MessageSubscriptions.Find(Message.EventId);
+    if (!Subscriptions)
     {
         return;
     }
 
-    for (TFunction<void(const FUIMessage&)>& Handler : *Handlers)
+    for (FUIMessageSubscription& Subscription : *Subscriptions)
     {
-        if (Handler)
+        if (Subscription.Callback)
         {
-            Handler(Message);
+            Subscription.Callback(Message);
         }
     }
 }

@@ -24,15 +24,10 @@ const TSharedPtr< FPrismUIBindState > GetHUDBinding()
 
 void FHUDPresenter::Install(UPrismUISubsystem& Messages)
 {
-    static TWeakObjectPtr<UPrismUISubsystem> InstalledMessages;
-    if (InstalledMessages.Get() == &Messages)
-    {
-        return;
-    }
+	const FName& PresenterName = FHUDPresenter::PresenterName();
 
-    InstalledMessages = &Messages;
-
-    Messages.Subscribe(UIEvents::Player::HPChanged, [](const FUIMessage& Message)
+    Messages.Subscribe(PresenterName, UIEvents::Player::HPChanged,
+        [](const FUIMessage& Message)
         {
             UMockPlayerModel* Model = Cast<UMockPlayerModel>(Message.GetSource());
             if (!Model)
@@ -44,20 +39,26 @@ void FHUDPresenter::Install(UPrismUISubsystem& Messages)
         }
     );
 
-    Messages.Subscribe(UIEvents::Player::HUD::DamageButtonClicked, [](const FUIMessage&)
-        {
-            FHUDPresenter::RequestDamage();
-        });
+	Messages.Subscribe(PresenterName, UIEvents::Player::HUD::DamageButtonClicked,
+		[](const FUIMessage&)
+		{
+			FHUDPresenter::RequestDamage();
+		}
+	);
 
-    Messages.Subscribe(UIEvents::Player::HUD::HealButtonClicked, [](const FUIMessage&)
-        {
-            FHUDPresenter::RequestHeal();
-        });
+	Messages.Subscribe(PresenterName, UIEvents::Player::HUD::HealButtonClicked,
+		[](const FUIMessage&)
+		{
+			FHUDPresenter::RequestHeal();
+		}
+	);
 
-    Messages.Subscribe(UIEvents::Player::HUD::Constructed, [](const FUIMessage& Message)
-        {
-            FHUDPresenter::RefreshView(Message);
-        });
+	Messages.Subscribe(PresenterName, UIEvents::Player::HUD::Constructed,
+		[](const FUIMessage& Message)
+		{
+			FHUDPresenter::RefreshView(Message);
+		}
+	);
 }
 
 void FHUDPresenter::RefreshHP(const UMockPlayerModel& Model)

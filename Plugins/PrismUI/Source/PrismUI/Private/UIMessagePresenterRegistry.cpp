@@ -17,6 +17,24 @@ namespace
             new TArray<FRegisteredUIMessagePresenter>();
         return *Presenters;
     }
+
+    void InstallPresenter(
+        UPrismUISubsystem& Messages,
+        const FRegisteredUIMessagePresenter& Presenter
+    )
+    {
+        if (Presenter.PresenterName.IsNone())
+        {
+            return;
+        }
+
+        Messages.ClearPresenterSubscriptions(Presenter.PresenterName);
+
+        if (Presenter.InstallFunction)
+        {
+            Presenter.InstallFunction(Messages);
+        }
+    }
 }
 
 void UIMessagePresenterRegistry::Register(
@@ -30,17 +48,19 @@ void UIMessagePresenterRegistry::Register(
     }
 
     TArray<FRegisteredUIMessagePresenter>& Presenters = GetRegisteredPresenters();
-    if (FRegisteredUIMessagePresenter* ExistingPresenter =
+    FRegisteredUIMessagePresenter* RegisteredPresenter =
         Presenters.FindByPredicate([PresenterName](const FRegisteredUIMessagePresenter& Presenter)
             {
                 return Presenter.PresenterName == PresenterName;
-            }))
+            });
+
+    if (RegisteredPresenter)
     {
-        ExistingPresenter->InstallFunction = InstallFunction;
+        RegisteredPresenter->InstallFunction = InstallFunction;
     }
     else
     {
-        Presenters.Add({ PresenterName, InstallFunction });
+        RegisteredPresenter = &Presenters.Add_GetRef({ PresenterName, InstallFunction });
     }
 
     if (GEngine)
@@ -48,7 +68,7 @@ void UIMessagePresenterRegistry::Register(
         if (UPrismUISubsystem* Messages =
             GEngine->GetEngineSubsystem<UPrismUISubsystem>())
         {
-            InstallFunction(*Messages);
+            InstallPresenter(*Messages, *RegisteredPresenter);
         }
     }
 }
@@ -66,6 +86,15 @@ void UIMessagePresenterRegistry::Unregister(FName PresenterName)
             return Presenter.PresenterName == PresenterName;
         }
     );
+
+    if (GEngine)
+    {
+        if (UPrismUISubsystem* Messages =
+            GEngine->GetEngineSubsystem<UPrismUISubsystem>())
+        {
+            Messages->ClearPresenterSubscriptions(PresenterName);
+        }
+    }
 }
 
 void UIMessagePresenterRegistry::InstallAll(UPrismUISubsystem& Messages)
@@ -73,10 +102,7 @@ void UIMessagePresenterRegistry::InstallAll(UPrismUISubsystem& Messages)
     const TArray<FRegisteredUIMessagePresenter> Presenters = GetRegisteredPresenters();
     for (const FRegisteredUIMessagePresenter& Presenter : Presenters)
     {
-        if (Presenter.InstallFunction)
-        {
-            Presenter.InstallFunction(Messages);
-        }
+        InstallPresenter(Messages, Presenter);
     }
 }
 
