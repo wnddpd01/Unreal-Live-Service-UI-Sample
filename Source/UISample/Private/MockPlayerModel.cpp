@@ -1,8 +1,7 @@
 #include "MockPlayerModel.h"
 
 #include "GeneratedUIEventIds.h"
-#include "PrismUISubsystem.h"
-#include "Engine/Engine.h"
+#include "PrismUI.h"
 
 void UMockPlayerModel::Initialize(int32 InMaxHP)
 {
@@ -38,14 +37,5 @@ void UMockPlayerModel::SetHP(int32 NewHP)
 
 void UMockPlayerModel::BroadcastHPChanged()
 {
-    if (!GEngine)
-    {
-        return;
-    }
-
-    if (UPrismUISubsystem* Messages =
-        GEngine->GetEngineSubsystem<UPrismUISubsystem>())
-    {
-        Messages->Send(UIEvents::Player::HPChanged, this);
-    }
+    UE::PrismUI::SendMessage(UIEvents::Player::HPChanged, this);
 }

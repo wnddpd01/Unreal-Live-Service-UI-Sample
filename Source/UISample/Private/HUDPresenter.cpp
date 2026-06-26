@@ -4,22 +4,17 @@
 #include "MockPlayerModel.h"
 #include "GeneratedUIEventIds.h"
 #include "UIMessagePresenterRegistry.h"
-#include "PrismUISubsystem.h"
 #include "Blueprint/WidgetTree.h"
 #include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
+#include "PrismUI.h"
+#include "PrismUISubsystem.h"
 
 PRISMUI_REGISTER_MESSAGE_PRESENTER(FHUDPresenter)
 
-const TSharedPtr< FPrismUIBindState > GetHUDBinding()
+const TSharedPtr< const FPrismUIBindState > GetHUDBinding()
 {
-    TSharedPtr< FPrismUIBindState > pBindState = nullptr;
-    if (UPrismUISubsystem* Messages =
-        GEngine->GetEngineSubsystem<UPrismUISubsystem>())
-    {
-        pBindState = Messages->GetBindState(FHUDPresenter::PresenterName());
-    }
-	return pBindState;
+	return UE::PrismUI::FindBindState(FHUDPresenter::PresenterName());
 }
 
 void FHUDPresenter::Install(UPrismUISubsystem& Messages)
@@ -63,7 +58,7 @@ void FHUDPresenter::Install(UPrismUISubsystem& Messages)
 
 void FHUDPresenter::RefreshHP(const UMockPlayerModel& Model)
 {
-    const TSharedPtr< FPrismUIBindState > pBindState = GetHUDBinding();
+    const TSharedPtr< const FPrismUIBindState > pBindState = GetHUDBinding();
     if (pBindState == nullptr || pBindState->Model.IsValid() && pBindState->Model.Get() != &Model)
     {
         return;
@@ -115,7 +110,7 @@ void FHUDPresenter::UpdateHPView(
 
 void FHUDPresenter::RequestDamage()
 {
-    const TSharedPtr< FPrismUIBindState > pBindState = GetHUDBinding();
+    const TSharedPtr< const FPrismUIBindState > pBindState = GetHUDBinding();
     if (!pBindState)
         return;
 
@@ -130,7 +125,7 @@ void FHUDPresenter::RequestDamage()
 
 void FHUDPresenter::RequestHeal()
 {
-    const TSharedPtr< FPrismUIBindState > pBindState = GetHUDBinding();
+    const TSharedPtr< const FPrismUIBindState > pBindState = GetHUDBinding();
     if (!pBindState)
         return;
 
@@ -145,7 +140,7 @@ void FHUDPresenter::RequestHeal()
 
 void FHUDPresenter::RefreshView(const FUIMessage& Message)
 {
-    const TSharedPtr< FPrismUIBindState > pBindState = GetHUDBinding();
+    const TSharedPtr< const FPrismUIBindState > pBindState = GetHUDBinding();
     if (!pBindState)
         return;
 

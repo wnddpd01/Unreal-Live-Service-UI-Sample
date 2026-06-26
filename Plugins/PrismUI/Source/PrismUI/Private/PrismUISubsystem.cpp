@@ -45,12 +45,11 @@ void UPrismUISubsystem::ClearPresenterSubscriptions(FName PresenterName)
 }
 
 
-void UPrismUISubsystem::Send(FName EventId, UObject* Source, UObject* Target)
+void UPrismUISubsystem::Send(FName EventId, UObject* Source)
 {
     FUIMessage Message;
     Message.EventId = EventId;
     Message.Source = Source;
-    Message.Target = Target;
 
     Send(Message);
 }
@@ -81,9 +80,9 @@ void UPrismUISubsystem::Send(const FUIMessage& Message)
     }
 }
 
-void UPrismUISubsystem::SendUIMessage(FName EventId, UObject* Source, UObject* Target)
+void UPrismUISubsystem::SendUIMessage(FName EventId, UObject* Source)
 {
-    Send(EventId, Source, Target);
+    Send(EventId, Source);
 }
 
 void UPrismUISubsystem::Bind(const FPrismUIBindRequest& bindingRequest)

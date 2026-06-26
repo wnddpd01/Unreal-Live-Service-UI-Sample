@@ -3,11 +3,10 @@
 #include "DefaultView.h"
 #include "GeneratedUIEventIds.h"
 #include "MockPlayerModel.h"
-#include "PrismUISubsystem.h"
 #include "UIEventDeclarationMacros.h"
 #include "Blueprint/UserWidget.h"
-#include "Engine/Engine.h"
 #include "HUDPresenter.h"
+#include "PrismUI.h"
 
 void ASamplePlayerController::BeginPlay()
 {
@@ -33,19 +32,11 @@ void ASamplePlayerController::BeginPlay()
         return;
     }
 
-    if (GEngine)
-    {
-        if (UPrismUISubsystem* Messages =
-            GEngine->GetEngineSubsystem<UPrismUISubsystem>())
-        {
-            FPrismUIBindRequest BindRequest;
-			BindRequest.PresenterName = FHUDPresenter::PresenterName();
-            BindRequest.Model = PlayerModel;
-            BindRequest.View = HUDWidgetInstance;
-
-            Messages->Bind(BindRequest);
-        }
-    }
+    FPrismUIBindRequest BindRequest;
+    BindRequest.PresenterName = FHUDPresenter::PresenterName();
+    BindRequest.Model = PlayerModel;
+    BindRequest.View = HUDWidgetInstance;
+    UE::PrismUI::Bind(BindRequest);
 
     HUDWidgetInstance->AddToViewport();
 
