@@ -57,13 +57,17 @@ void UPrismUISubsystem::Send(const FUIMessage& Message)
         return;
     }
 
-    TArray<FUIMessageSubscription>* Subscriptions = MessageSubscriptions.Find(Message.EventId);
+    const TArray<FUIMessageSubscription>* Subscriptions = MessageSubscriptions.Find(Message.EventId);
     if (!Subscriptions)
     {
         return;
     }
 
-    for (FUIMessageSubscription& Subscription : *Subscriptions)
+    // Dispatch uses a snapshot captured at Send() start
+	// Subscription changes made by callbacks apply from the next Send() call.
+    const TArray<FUIMessageSubscription> SubscriptionsCopy = *Subscriptions;
+
+    for (const FUIMessageSubscription& Subscription : SubscriptionsCopy)
     {
         if (Subscription.Callback)
         {
