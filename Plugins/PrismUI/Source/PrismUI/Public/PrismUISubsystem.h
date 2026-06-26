@@ -57,6 +57,11 @@ struct FPrismUIBindState
     FName PresenterName;
     TWeakObjectPtr<UObject> Model;
     TWeakObjectPtr<UObject> View;
+
+	bool IsValid() const
+	{
+		return Model.IsValid() && View.IsValid();
+	}
 };
 
 UCLASS()
@@ -88,17 +93,26 @@ public:
     void SendUIMessage(FName EventId, UObject* Source = nullptr, UObject* Target = nullptr);
 
     void Bind(const FPrismUIBindRequest& bindingRequest);
+    bool Unbind(const FName BindingId);
 
     const TSharedPtr<FPrismUIBindState> GetBindState(FName BindingId) const
     {
         if (const TSharedPtr<FPrismUIBindState>* FoundState = UIBindStates.Find(BindingId))
         {
-            return *FoundState;
+            if (FoundState->IsValid() && (*FoundState)->IsValid() )
+            {
+                return *FoundState;
+            }
         }
         return nullptr;
     }
 
+private :
+    void PurgeStaleBindings();
+
 private:
     TMap<FName/* Event Id */, TArray<FUIMessageSubscription>> MessageSubscriptions;
     TMap<FName, TSharedPtr< FPrismUIBindState > > UIBindStates;
+
+    FDelegateHandle PostGarbageCollectHandle;
 };

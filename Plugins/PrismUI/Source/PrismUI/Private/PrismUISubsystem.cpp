@@ -1,21 +1,26 @@
 #include "PrismUISubsystem.h"
 
 #include "UIMessagePresenterRegistry.h"
+#include "UObject/UObjectGlobals.h"
 
 void UPrismUISubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
     Super::Initialize(Collection);
 
     UIMessagePresenterRegistry::InstallAll(*this);
+    PostGarbageCollectHandle = FCoreUObjectDelegates::GetPostGarbageCollect().AddUObject(
+        this,
+        &UPrismUISubsystem::PurgeStaleBindings
+    );
 
     UE_LOG(LogTemp, Log, TEXT("UIMessageSubsystem initialized."));
 }
 
 void UPrismUISubsystem::Deinitialize()
 {
+    FCoreUObjectDelegates::GetPostGarbageCollect().Remove(PostGarbageCollectHandle);
     MessageSubscriptions.Reset();
     UIBindStates.Reset();
-
     UE_LOG(LogTemp, Log, TEXT("UIMessageSubsystem deinitialized."));
 
     Super::Deinitialize();
@@ -96,4 +101,26 @@ void UPrismUISubsystem::Bind(const FPrismUIBindRequest& bindingRequest)
     pBindState->View = bindingRequest.View;
 
     UIBindStates.Add(pBindState->BindingId, pBindState);
+}
+
+bool UPrismUISubsystem::Unbind(const FName BindingId)
+{
+	if (BindingId.IsNone())
+	{
+		return false;
+	}
+
+    return UIBindStates.Remove(BindingId) > 0;
+}
+
+void UPrismUISubsystem::PurgeStaleBindings()
+{
+	for (auto It = UIBindStates.CreateIterator(); It; ++It)
+	{
+		const TSharedPtr<FPrismUIBindState>& BindState = It.Value();
+        if (!BindState.IsValid() || !BindState->Model.IsValid() || !BindState->View.IsValid() )
+        {
+            It.RemoveCurrent();
+        }
+	}
 }
